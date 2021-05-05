@@ -3,5 +3,7 @@ with open('input', 'r') as a:
     num = 0
     for line in a:
       line = line.strip().split()
-      b.write('\t({}, {}, {}),\t\t\t\t# 0x{}\n'.format(*line, num))
+      if num % 16 == 0:
+        b.write('\t# {}\n'.format(hex(num)))
+      b.write('\t{},\n'.format(line[0]))
       num += 1
