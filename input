@@ -1,256 +1,256 @@
-nop
-ld_bc_d16
-ld_bc_a
-inc_bc
-inc_b
-dec_b
-ld_b_d8
-rlca
-ld_a16_sp
-add_hl_bc
-ld_a_bc
-dec_bc
-inc_c
-dec_c
-ld_c_d8
-rrca
-stop_0
-ld_de_d16
-ld_de_a
-inc_de
-inc_d
-dec_d
-ld_d_d8
-rla
-jr_r8
-add_hl_de
-ld_a_de
-dec_de
-inc_e
-dec_e
-ld_e_d8
-rra
-jr_nz_r8
-ld_hl_d16
-ld_hlp_a
-inc_hl
-inc_h
-dec_h
-ld_h_d8
-daa
-jr_z_r8
-add_hl_hl
-ld_a_hlp
-dec_hl
-inc_l
-dec_l
-ld_l_d8
-cpl
-jr_nc_r8
-ld_sp_d16
-ld_hlm_a
-inc_sp
-inc_hlp
-dec_hlp
-ld_hl_d8
-scf
-jr_c_r8
-add_hl_sp
-ld_a_hlm
-dec_sp
-inc_a
-dec_a
-ld_a_d8
-ccf
-ld_b_b
-ld_b_c
-ld_b_d
-ld_b_e
-ld_b_h
-ld_b_l
-ld_b_hl
-ld_b_a
-ld_c_b
-ld_c_c
-ld_c_d
-ld_c_e
-ld_c_h
-ld_c_l
-ld_c_hl
-ld_c_a
-ld_d_b
-ld_d_c
-ld_d_d
-ld_d_e
-ld_d_h
-ld_d_l
-ld_d_hl
-ld_d_a
-ld_e_b
-ld_e_c
-ld_e_d
-ld_e_e
-ld_e_h
-ld_e_l
-ld_e_hl
-ld_e_a
-ld_h_b
-ld_h_c
-ld_h_d
-ld_h_e
-ld_h_h
-ld_h_l
-ld_h_hl
-ld_h_a
-ld_l_b
-ld_l_c
-ld_l_d
-ld_l_e
-ld_l_h
-ld_l_l
-ld_l_hl
-ld_l_a
-ld_hl_b
-ld_hl_c
-ld_hl_d
-ld_hl_e
-ld_hl_h
-ld_hl_l
-halt
-ld_hl_a
-ld_a_b
-ld_a_c
-ld_a_d
-ld_a_e
-ld_a_h
-ld_a_l
-ld_a_hl
-ld_a_a
-add_a_b
-add_a_c
-add_a_d
-add_a_e
-add_a_h
-add_a_l
-add_a_hl
-add_a_a
-adc_a_b
-adc_a_c
-adc_a_d
-adc_a_e
-adc_a_h
-adc_a_l
-adc_a_hl
-adc_a_a
-sub_b
-sub_c
-sub_d
-sub_e
-sub_h
-sub_l
-sub_hl
-sub_a
-sbc_a_b
-sbc_a_c
-sbc_a_d
-sbc_a_e
-sbc_a_h
-sbc_a_l
-sbc_a_hl
-sbc_a_a
-and_b
-and_c
-and_d
-and_e
-and_h
-and_l
-and_hl
-and_a
-xor_b
-xor_c
-xor_d
-xor_e
-xor_h
-xor_l
-xor_hl
-xor_a
-or_b
-or_c
-or_d
-or_e
-or_h
-or_l
-or_hl
-or_a
-cp_b
-cp_c
-cp_d
-cp_e
-cp_h
-cp_l
-cp_hl
-cp_a
-ret_nz
-pop_bc
-jp_nz_a16
-jp_a16
-call_nz_a16
-push_bc
-add_a_d8
-rst_00h
-ret_z
-ret
-jp_z_a16
-prefix_cb
-call_z_a16
-call_a16
-adc_a_d8
-rst_08h
-ret_nc
-pop_de
-jp_nc_a16
-op_0xd3
-call_nc_a16
-push_de
-sub_d8
-rst_10h
-ret_c
-reti
-jp_c_a16
-op_0xdb
-call_c_a16
-op_0xdd
-sbc_a_d8
-rst_18h
-ldh_a8_a
-pop_hl
-ld_c_a
-op_0xe3
-op_0xe4
-push_hl
-and_d8
-rst_20h
-add_sp_r8
-jp_hl
-ld_a16_a
-op_0xeb
-op_0xec
-op_0xed
-xor_d8
-rst_28h
-ldh_a_a8
-pop_af
-ld_a_c
-di
-op_0xf4
-push_af
-or_d8
-rst_30h
-ld_hl_spr8
-ld_sp_hl
-ld_a_a16
-ei
-op_0xfc
-op_0xfd
-cp_d8
-rst_38h
+nop 1 4
+ld_bc_d16 3 12
+ld_bc_a 1 8
+inc_bc 1 8
+inc_b 1 4
+dec_b 1 4
+ld_b_d8 2 8
+rlca 1 4
+ld_a16_sp 3 20
+add_hl_bc 1 8
+ld_a_bc 1 8
+dec_bc 1 8
+inc_c 1 4
+dec_c 1 4
+ld_c_d8 2 8
+rrca 1 4
+stop_0 2 4
+ld_de_d16 3 12
+ld_de_a 1 8
+inc_de 1 8
+inc_d 1 4
+dec_d 1 4
+ld_d_d8 2 8
+rla 1 4
+jr_r8 2 12
+add_hl_de 1 8
+ld_a_de 1 8
+dec_de 1 8
+inc_e 1 4
+dec_e 1 4
+ld_e_d8 2 8
+rra 1 4
+jr_nz_r8 2 0
+ld_hl_d16 3 12
+ld_hlp_a 1 8
+inc_hl 1 8
+inc_h 1 4
+dec_h 1 4
+ld_h_d8 2 8
+daa 1 4
+jr_z_r8 2 0
+add_hl_hl 1 8
+ld_a_hlp 1 8
+dec_hl 1 8
+inc_l 1 4
+dec_l 1 4
+ld_l_d8 2 8
+cpl 1 4
+jr_nc_r8 2 0
+ld_sp_d16 3 12
+ld_hlm_a 1 8
+inc_sp 1 8
+inc_hlp 1 12
+dec_hlp 1 12
+ld_hl_d8 2 12
+scf 1 4
+jr_c_r8 2 0
+add_hl_sp 1 8
+ld_a_hlm 1 8
+dec_sp 1 8
+inc_a 1 4
+dec_a 1 4
+ld_a_d8 2 8
+ccf 1 4
+ld_b_b 1 4
+ld_b_c 1 4
+ld_b_d 1 4
+ld_b_e 1 4
+ld_b_h 1 4
+ld_b_l 1 4
+ld_b_hl 1 8
+ld_b_a 1 4
+ld_c_b 1 4
+ld_c_c 1 4
+ld_c_d 1 4
+ld_c_e 1 4
+ld_c_h 1 4
+ld_c_l 1 4
+ld_c_hl 1 8
+ld_c_a 1 4
+ld_d_b 1 4
+ld_d_c 1 4
+ld_d_d 1 4
+ld_d_e 1 4
+ld_d_h 1 4
+ld_d_l 1 4
+ld_d_hl 1 8
+ld_d_a 1 4
+ld_e_b 1 4
+ld_e_c 1 4
+ld_e_d 1 4
+ld_e_e 1 4
+ld_e_h 1 4
+ld_e_l 1 4
+ld_e_hl 1 8
+ld_e_a 1 4
+ld_h_b 1 4
+ld_h_c 1 4
+ld_h_d 1 4
+ld_h_e 1 4
+ld_h_h 1 4
+ld_h_l 1 4
+ld_h_hl 1 8
+ld_h_a 1 4
+ld_l_b 1 4
+ld_l_c 1 4
+ld_l_d 1 4
+ld_l_e 1 4
+ld_l_h 1 4
+ld_l_l 1 4
+ld_l_hl 1 8
+ld_l_a 1 4
+ld_hl_b 1 8
+ld_hl_c 1 8
+ld_hl_d 1 8
+ld_hl_e 1 8
+ld_hl_h 1 8
+ld_hl_l 1 8
+halt 1 4
+ld_hl_a 1 8
+ld_a_b 1 4
+ld_a_c 1 4
+ld_a_d 1 4
+ld_a_e 1 4
+ld_a_h 1 4
+ld_a_l 1 4
+ld_a_hl 1 8
+ld_a_a 1 4
+add_a_b 1 4
+add_a_c 1 4
+add_a_d 1 4
+add_a_e 1 4
+add_a_h 1 4
+add_a_l 1 4
+add_a_hl 1 8
+add_a_a 1 4
+adc_a_b 1 4
+adc_a_c 1 4
+adc_a_d 1 4
+adc_a_e 1 4
+adc_a_h 1 4
+adc_a_l 1 4
+adc_a_hl 1 8
+adc_a_a 1 4
+sub_b 1 4
+sub_c 1 4
+sub_d 1 4
+sub_e 1 4
+sub_h 1 4
+sub_l 1 4
+sub_hl 1 8
+sub_a 1 4
+sbc_a_b 1 4
+sbc_a_c 1 4
+sbc_a_d 1 4
+sbc_a_e 1 4
+sbc_a_h 1 4
+sbc_a_l 1 4
+sbc_a_hl 1 8
+sbc_a_a 1 4
+and_b 1 4
+and_c 1 4
+and_d 1 4
+and_e 1 4
+and_h 1 4
+and_l 1 4
+and_hl 1 8
+and_a 1 4
+xor_b 1 4
+xor_c 1 4
+xor_d 1 4
+xor_e 1 4
+xor_h 1 4
+xor_l 1 4
+xor_hl 1 8
+xor_a 1 4
+or_b 1 4
+or_c 1 4
+or_d 1 4
+or_e 1 4
+or_h 1 4
+or_l 1 4
+or_hl 1 8
+or_a 1 4
+cp_b 1 4
+cp_c 1 4
+cp_d 1 4
+cp_e 1 4
+cp_h 1 4
+cp_l 1 4
+cp_hl 1 8
+cp_a 1 4
+ret_nz 1 0
+pop_bc 1 12
+jp_nz_a16 3 0
+jp_a16 3 16
+call_nz_a16 3 0
+push_bc 1 16
+add_a_d8 2 8
+rst_00h 1 16
+ret_z 1 0
+ret 1 16
+jp_z_a16 3 0
+prefix_cb 1 4
+call_z_a16 3 0
+call_a16 3 24
+adc_a_d8 2 8
+rst_08h 1 16
+ret_nc 1 0
+pop_de 1 12
+jp_nc_a16 3 0
+op_0xd3 0 0
+call_nc_a16 3 0
+push_de 1 16
+sub_d8 2 8
+rst_10h 1 16
+ret_c 1 0
+reti 1 16
+jp_c_a16 3 0
+op_0xdb 0 0
+call_c_a16 3 0
+op_0xdd 0 0
+sbc_a_d8 2 8
+rst_18h 1 16
+ldh_a8_a 2 12
+pop_hl 1 12
+ld_c_a 2 8
+op_0xe3 0 0
+op_0xe4 0 0
+push_hl 1 16
+and_d8 2 8
+rst_20h 1 16
+add_sp_r8 2 16
+jp_hl 1 4
+ld_a16_a 3 16
+op_0xeb 0 0
+op_0xec 0 0
+op_0xed 0 0
+xor_d8 2 8
+rst_28h 1 16
+ldh_a_a8 2 12
+pop_af 1 12
+ld_a_c 2 8
+di 1 4
+op_0xf4 0 0
+push_af 1 16
+or_d8 2 8
+rst_30h 1 16
+ld_hl_spr8 2 12
+ld_sp_hl 1 8
+ld_a_a16 3 16
+ei 1 4
+op_0xfc 0 0
+op_0xfd 0 0
+cp_d8 2 8
+rst_38h 1 16

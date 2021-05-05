@@ -1,5 +1,5 @@
 with open('input', 'r') as a:
-  with open('output', 'w') as b:
+  with open('output_op', 'w') as b:
     num = 0
     for line in a:
       line = line.strip()
