@@ -1,0 +1,1024 @@
+def rlc_b(cpu):
+	# cb 0x0
+	pass
+
+def rlc_c(cpu):
+	# cb 0x1
+	pass
+
+def rlc_d(cpu):
+	# cb 0x2
+	pass
+
+def rlc_e(cpu):
+	# cb 0x3
+	pass
+
+def rlc_h(cpu):
+	# cb 0x4
+	pass
+
+def rlc_l(cpu):
+	# cb 0x5
+	pass
+
+def rlc_hl(cpu):
+	# cb 0x6
+	pass
+
+def rlc_a(cpu):
+	# cb 0x7
+	pass
+
+def rrc_b(cpu):
+	# cb 0x8
+	pass
+
+def rrc_c(cpu):
+	# cb 0x9
+	pass
+
+def rrc_d(cpu):
+	# cb 0xa
+	pass
+
+def rrc_e(cpu):
+	# cb 0xb
+	pass
+
+def rrc_h(cpu):
+	# cb 0xc
+	pass
+
+def rrc_l(cpu):
+	# cb 0xd
+	pass
+
+def rrc_hl(cpu):
+	# cb 0xe
+	pass
+
+def rrc_a(cpu):
+	# cb 0xf
+	pass
+
+def rl_b(cpu):
+	# cb 0x10
+	pass
+
+def rl_c(cpu):
+	# cb 0x11
+	pass
+
+def rl_d(cpu):
+	# cb 0x12
+	pass
+
+def rl_e(cpu):
+	# cb 0x13
+	pass
+
+def rl_h(cpu):
+	# cb 0x14
+	pass
+
+def rl_l(cpu):
+	# cb 0x15
+	pass
+
+def rl_hl(cpu):
+	# cb 0x16
+	pass
+
+def rl_a(cpu):
+	# cb 0x17
+	pass
+
+def rr_b(cpu):
+	# cb 0x18
+	pass
+
+def rr_c(cpu):
+	# cb 0x19
+	pass
+
+def rr_d(cpu):
+	# cb 0x1a
+	pass
+
+def rr_e(cpu):
+	# cb 0x1b
+	pass
+
+def rr_h(cpu):
+	# cb 0x1c
+	pass
+
+def rr_l(cpu):
+	# cb 0x1d
+	pass
+
+def rr_hl(cpu):
+	# cb 0x1e
+	pass
+
+def rr_a(cpu):
+	# cb 0x1f
+	pass
+
+def sla_b(cpu):
+	# cb 0x20
+	pass
+
+def sla_c(cpu):
+	# cb 0x21
+	pass
+
+def sla_d(cpu):
+	# cb 0x22
+	pass
+
+def sla_e(cpu):
+	# cb 0x23
+	pass
+
+def sla_h(cpu):
+	# cb 0x24
+	pass
+
+def sla_l(cpu):
+	# cb 0x25
+	pass
+
+def sla_hl(cpu):
+	# cb 0x26
+	pass
+
+def sla_a(cpu):
+	# cb 0x27
+	pass
+
+def sra_b(cpu):
+	# cb 0x28
+	pass
+
+def sra_c(cpu):
+	# cb 0x29
+	pass
+
+def sra_d(cpu):
+	# cb 0x2a
+	pass
+
+def sra_e(cpu):
+	# cb 0x2b
+	pass
+
+def sra_h(cpu):
+	# cb 0x2c
+	pass
+
+def sra_l(cpu):
+	# cb 0x2d
+	pass
+
+def sra_hl(cpu):
+	# cb 0x2e
+	pass
+
+def sra_a(cpu):
+	# cb 0x2f
+	pass
+
+def swap_b(cpu):
+	# cb 0x30
+	pass
+
+def swap_c(cpu):
+	# cb 0x31
+	pass
+
+def swap_d(cpu):
+	# cb 0x32
+	pass
+
+def swap_e(cpu):
+	# cb 0x33
+	pass
+
+def swap_h(cpu):
+	# cb 0x34
+	pass
+
+def swap_l(cpu):
+	# cb 0x35
+	pass
+
+def swap_hl(cpu):
+	# cb 0x36
+	pass
+
+def swap_a(cpu):
+	# cb 0x37
+	pass
+
+def srl_b(cpu):
+	# cb 0x38
+	pass
+
+def srl_c(cpu):
+	# cb 0x39
+	pass
+
+def srl_d(cpu):
+	# cb 0x3a
+	pass
+
+def srl_e(cpu):
+	# cb 0x3b
+	pass
+
+def srl_h(cpu):
+	# cb 0x3c
+	pass
+
+def srl_l(cpu):
+	# cb 0x3d
+	pass
+
+def srl_hl(cpu):
+	# cb 0x3e
+	pass
+
+def srl_a(cpu):
+	# cb 0x3f
+	pass
+
+def bit_0_b(cpu):
+	# cb 0x40
+	pass
+
+def bit_0_c(cpu):
+	# cb 0x41
+	pass
+
+def bit_0_d(cpu):
+	# cb 0x42
+	pass
+
+def bit_0_e(cpu):
+	# cb 0x43
+	pass
+
+def bit_0_h(cpu):
+	# cb 0x44
+	pass
+
+def bit_0_l(cpu):
+	# cb 0x45
+	pass
+
+def bit_0_hl(cpu):
+	# cb 0x46
+	pass
+
+def bit_0_a(cpu):
+	# cb 0x47
+	pass
+
+def bit_1_b(cpu):
+	# cb 0x48
+	pass
+
+def bit_1_c(cpu):
+	# cb 0x49
+	pass
+
+def bit_1_d(cpu):
+	# cb 0x4a
+	pass
+
+def bit_1_e(cpu):
+	# cb 0x4b
+	pass
+
+def bit_1_h(cpu):
+	# cb 0x4c
+	pass
+
+def bit_1_l(cpu):
+	# cb 0x4d
+	pass
+
+def bit_1_hl(cpu):
+	# cb 0x4e
+	pass
+
+def bit_1_a(cpu):
+	# cb 0x4f
+	pass
+
+def bit_2_b(cpu):
+	# cb 0x50
+	pass
+
+def bit_2_c(cpu):
+	# cb 0x51
+	pass
+
+def bit_2_d(cpu):
+	# cb 0x52
+	pass
+
+def bit_2_e(cpu):
+	# cb 0x53
+	pass
+
+def bit_2_h(cpu):
+	# cb 0x54
+	pass
+
+def bit_2_l(cpu):
+	# cb 0x55
+	pass
+
+def bit_2_hl(cpu):
+	# cb 0x56
+	pass
+
+def bit_2_a(cpu):
+	# cb 0x57
+	pass
+
+def bit_3_b(cpu):
+	# cb 0x58
+	pass
+
+def bit_3_c(cpu):
+	# cb 0x59
+	pass
+
+def bit_3_d(cpu):
+	# cb 0x5a
+	pass
+
+def bit_3_e(cpu):
+	# cb 0x5b
+	pass
+
+def bit_3_h(cpu):
+	# cb 0x5c
+	pass
+
+def bit_3_l(cpu):
+	# cb 0x5d
+	pass
+
+def bit_3_hl(cpu):
+	# cb 0x5e
+	pass
+
+def bit_3_a(cpu):
+	# cb 0x5f
+	pass
+
+def bit_4_b(cpu):
+	# cb 0x60
+	pass
+
+def bit_4_c(cpu):
+	# cb 0x61
+	pass
+
+def bit_4_d(cpu):
+	# cb 0x62
+	pass
+
+def bit_4_e(cpu):
+	# cb 0x63
+	pass
+
+def bit_4_h(cpu):
+	# cb 0x64
+	pass
+
+def bit_4_l(cpu):
+	# cb 0x65
+	pass
+
+def bit_4_hl(cpu):
+	# cb 0x66
+	pass
+
+def bit_4_a(cpu):
+	# cb 0x67
+	pass
+
+def bit_5_b(cpu):
+	# cb 0x68
+	pass
+
+def bit_5_c(cpu):
+	# cb 0x69
+	pass
+
+def bit_5_d(cpu):
+	# cb 0x6a
+	pass
+
+def bit_5_e(cpu):
+	# cb 0x6b
+	pass
+
+def bit_5_h(cpu):
+	# cb 0x6c
+	pass
+
+def bit_5_l(cpu):
+	# cb 0x6d
+	pass
+
+def bit_5_hl(cpu):
+	# cb 0x6e
+	pass
+
+def bit_5_a(cpu):
+	# cb 0x6f
+	pass
+
+def bit_6_b(cpu):
+	# cb 0x70
+	pass
+
+def bit_6_c(cpu):
+	# cb 0x71
+	pass
+
+def bit_6_d(cpu):
+	# cb 0x72
+	pass
+
+def bit_6_e(cpu):
+	# cb 0x73
+	pass
+
+def bit_6_h(cpu):
+	# cb 0x74
+	pass
+
+def bit_6_l(cpu):
+	# cb 0x75
+	pass
+
+def bit_6_hl(cpu):
+	# cb 0x76
+	pass
+
+def bit_6_a(cpu):
+	# cb 0x77
+	pass
+
+def bit_7_b(cpu):
+	# cb 0x78
+	pass
+
+def bit_7_c(cpu):
+	# cb 0x79
+	pass
+
+def bit_7_d(cpu):
+	# cb 0x7a
+	pass
+
+def bit_7_e(cpu):
+	# cb 0x7b
+	pass
+
+def bit_7_h(cpu):
+	# cb 0x7c
+	pass
+
+def bit_7_l(cpu):
+	# cb 0x7d
+	pass
+
+def bit_7_hl(cpu):
+	# cb 0x7e
+	pass
+
+def bit_7_a(cpu):
+	# cb 0x7f
+	pass
+
+def res_0_b(cpu):
+	# cb 0x80
+	pass
+
+def res_0_c(cpu):
+	# cb 0x81
+	pass
+
+def res_0_d(cpu):
+	# cb 0x82
+	pass
+
+def res_0_e(cpu):
+	# cb 0x83
+	pass
+
+def res_0_h(cpu):
+	# cb 0x84
+	pass
+
+def res_0_l(cpu):
+	# cb 0x85
+	pass
+
+def res_0_hl(cpu):
+	# cb 0x86
+	pass
+
+def res_0_a(cpu):
+	# cb 0x87
+	pass
+
+def res_1_b(cpu):
+	# cb 0x88
+	pass
+
+def res_1_c(cpu):
+	# cb 0x89
+	pass
+
+def res_1_d(cpu):
+	# cb 0x8a
+	pass
+
+def res_1_e(cpu):
+	# cb 0x8b
+	pass
+
+def res_1_h(cpu):
+	# cb 0x8c
+	pass
+
+def res_1_l(cpu):
+	# cb 0x8d
+	pass
+
+def res_1_hl(cpu):
+	# cb 0x8e
+	pass
+
+def res_1_a(cpu):
+	# cb 0x8f
+	pass
+
+def res_2_b(cpu):
+	# cb 0x90
+	pass
+
+def res_2_c(cpu):
+	# cb 0x91
+	pass
+
+def res_2_d(cpu):
+	# cb 0x92
+	pass
+
+def res_2_e(cpu):
+	# cb 0x93
+	pass
+
+def res_2_h(cpu):
+	# cb 0x94
+	pass
+
+def res_2_l(cpu):
+	# cb 0x95
+	pass
+
+def res_2_hl(cpu):
+	# cb 0x96
+	pass
+
+def res_2_a(cpu):
+	# cb 0x97
+	pass
+
+def res_3_b(cpu):
+	# cb 0x98
+	pass
+
+def res_3_c(cpu):
+	# cb 0x99
+	pass
+
+def res_3_d(cpu):
+	# cb 0x9a
+	pass
+
+def res_3_e(cpu):
+	# cb 0x9b
+	pass
+
+def res_3_h(cpu):
+	# cb 0x9c
+	pass
+
+def res_3_l(cpu):
+	# cb 0x9d
+	pass
+
+def res_3_hl(cpu):
+	# cb 0x9e
+	pass
+
+def res_3_a(cpu):
+	# cb 0x9f
+	pass
+
+def res_4_b(cpu):
+	# cb 0xa0
+	pass
+
+def res_4_c(cpu):
+	# cb 0xa1
+	pass
+
+def res_4_d(cpu):
+	# cb 0xa2
+	pass
+
+def res_4_e(cpu):
+	# cb 0xa3
+	pass
+
+def res_4_h(cpu):
+	# cb 0xa4
+	pass
+
+def res_4_l(cpu):
+	# cb 0xa5
+	pass
+
+def res_4_hl(cpu):
+	# cb 0xa6
+	pass
+
+def res_4_a(cpu):
+	# cb 0xa7
+	pass
+
+def res_5_b(cpu):
+	# cb 0xa8
+	pass
+
+def res_5_c(cpu):
+	# cb 0xa9
+	pass
+
+def res_5_d(cpu):
+	# cb 0xaa
+	pass
+
+def res_5_e(cpu):
+	# cb 0xab
+	pass
+
+def res_5_h(cpu):
+	# cb 0xac
+	pass
+
+def res_5_l(cpu):
+	# cb 0xad
+	pass
+
+def res_5_hl(cpu):
+	# cb 0xae
+	pass
+
+def res_5_a(cpu):
+	# cb 0xaf
+	pass
+
+def res_6_b(cpu):
+	# cb 0xb0
+	pass
+
+def res_6_c(cpu):
+	# cb 0xb1
+	pass
+
+def res_6_d(cpu):
+	# cb 0xb2
+	pass
+
+def res_6_e(cpu):
+	# cb 0xb3
+	pass
+
+def res_6_h(cpu):
+	# cb 0xb4
+	pass
+
+def res_6_l(cpu):
+	# cb 0xb5
+	pass
+
+def res_6_hl(cpu):
+	# cb 0xb6
+	pass
+
+def res_6_a(cpu):
+	# cb 0xb7
+	pass
+
+def res_7_b(cpu):
+	# cb 0xb8
+	pass
+
+def res_7_c(cpu):
+	# cb 0xb9
+	pass
+
+def res_7_d(cpu):
+	# cb 0xba
+	pass
+
+def res_7_e(cpu):
+	# cb 0xbb
+	pass
+
+def res_7_h(cpu):
+	# cb 0xbc
+	pass
+
+def res_7_l(cpu):
+	# cb 0xbd
+	pass
+
+def res_7_hl(cpu):
+	# cb 0xbe
+	pass
+
+def res_7_a(cpu):
+	# cb 0xbf
+	pass
+
+def set_0_b(cpu):
+	# cb 0xc0
+	pass
+
+def set_0_c(cpu):
+	# cb 0xc1
+	pass
+
+def set_0_d(cpu):
+	# cb 0xc2
+	pass
+
+def set_0_e(cpu):
+	# cb 0xc3
+	pass
+
+def set_0_h(cpu):
+	# cb 0xc4
+	pass
+
+def set_0_l(cpu):
+	# cb 0xc5
+	pass
+
+def set_0_hl(cpu):
+	# cb 0xc6
+	pass
+
+def set_0_a(cpu):
+	# cb 0xc7
+	pass
+
+def set_1_b(cpu):
+	# cb 0xc8
+	pass
+
+def set_1_c(cpu):
+	# cb 0xc9
+	pass
+
+def set_1_d(cpu):
+	# cb 0xca
+	pass
+
+def set_1_e(cpu):
+	# cb 0xcb
+	pass
+
+def set_1_h(cpu):
+	# cb 0xcc
+	pass
+
+def set_1_l(cpu):
+	# cb 0xcd
+	pass
+
+def set_1_hl(cpu):
+	# cb 0xce
+	pass
+
+def set_1_a(cpu):
+	# cb 0xcf
+	pass
+
+def set_2_b(cpu):
+	# cb 0xd0
+	pass
+
+def set_2_c(cpu):
+	# cb 0xd1
+	pass
+
+def set_2_d(cpu):
+	# cb 0xd2
+	pass
+
+def set_2_e(cpu):
+	# cb 0xd3
+	pass
+
+def set_2_h(cpu):
+	# cb 0xd4
+	pass
+
+def set_2_l(cpu):
+	# cb 0xd5
+	pass
+
+def set_2_hl(cpu):
+	# cb 0xd6
+	pass
+
+def set_2_a(cpu):
+	# cb 0xd7
+	pass
+
+def set_3_b(cpu):
+	# cb 0xd8
+	pass
+
+def set_3_c(cpu):
+	# cb 0xd9
+	pass
+
+def set_3_d(cpu):
+	# cb 0xda
+	pass
+
+def set_3_e(cpu):
+	# cb 0xdb
+	pass
+
+def set_3_h(cpu):
+	# cb 0xdc
+	pass
+
+def set_3_l(cpu):
+	# cb 0xdd
+	pass
+
+def set_3_hl(cpu):
+	# cb 0xde
+	pass
+
+def set_3_a(cpu):
+	# cb 0xdf
+	pass
+
+def set_4_b(cpu):
+	# cb 0xe0
+	pass
+
+def set_4_c(cpu):
+	# cb 0xe1
+	pass
+
+def set_4_d(cpu):
+	# cb 0xe2
+	pass
+
+def set_4_e(cpu):
+	# cb 0xe3
+	pass
+
+def set_4_h(cpu):
+	# cb 0xe4
+	pass
+
+def set_4_l(cpu):
+	# cb 0xe5
+	pass
+
+def set_4_hl(cpu):
+	# cb 0xe6
+	pass
+
+def set_4_a(cpu):
+	# cb 0xe7
+	pass
+
+def set_5_b(cpu):
+	# cb 0xe8
+	pass
+
+def set_5_c(cpu):
+	# cb 0xe9
+	pass
+
+def set_5_d(cpu):
+	# cb 0xea
+	pass
+
+def set_5_e(cpu):
+	# cb 0xeb
+	pass
+
+def set_5_h(cpu):
+	# cb 0xec
+	pass
+
+def set_5_l(cpu):
+	# cb 0xed
+	pass
+
+def set_5_hl(cpu):
+	# cb 0xee
+	pass
+
+def set_5_a(cpu):
+	# cb 0xef
+	pass
+
+def set_6_b(cpu):
+	# cb 0xf0
+	pass
+
+def set_6_c(cpu):
+	# cb 0xf1
+	pass
+
+def set_6_d(cpu):
+	# cb 0xf2
+	pass
+
+def set_6_e(cpu):
+	# cb 0xf3
+	pass
+
+def set_6_h(cpu):
+	# cb 0xf4
+	pass
+
+def set_6_l(cpu):
+	# cb 0xf5
+	pass
+
+def set_6_hl(cpu):
+	# cb 0xf6
+	pass
+
+def set_6_a(cpu):
+	# cb 0xf7
+	pass
+
+def set_7_b(cpu):
+	# cb 0xf8
+	pass
+
+def set_7_c(cpu):
+	# cb 0xf9
+	pass
+
+def set_7_d(cpu):
+	# cb 0xfa
+	pass
+
+def set_7_e(cpu):
+	# cb 0xfb
+	pass
+
+def set_7_h(cpu):
+	# cb 0xfc
+	pass
+
+def set_7_l(cpu):
+	# cb 0xfd
+	pass
+
+def set_7_hl(cpu):
+	# cb 0xfe
+	pass
+
+def set_7_a(cpu):
+	# cb 0xff
+	pass
+

@@ -11,7 +11,3 @@ class Bus:
 
   def write_mem(self, addr, val):
     self.mem.write(addr, val)
-
-b = Bus()
-for i in range(1000):
-  b.cpu.step()

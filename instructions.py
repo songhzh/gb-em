@@ -8,7 +8,7 @@ def inc_byte(cpu, val):
 	return val + 1
 
 def dec_byte(cpu, val):
-	z = 1 if val + 1 == 0 else 0
+	z = 1 if val - 1 == 0 else 0
 	h = 0 if val & 0xf else 1
 	cpu.flags(z, 1, h, None)
 	return val + 1
@@ -23,25 +23,72 @@ def add_word(cpu, val0, val1):
 def rlc(cpu, val):
 	c = 1 if val & 0x80 else 0
 	res = (val << 1) | c
-	cpu.flags(0, 0, 0, c)
+	z = res == 0
+	cpu.flags(z, 0, 0, c)
 	return res
 
 def rl(cpu, val):
 	c = 1 if val & 0x80 else 0
 	res = (val << 1) | (cpu.regs.f_c)
-	cpu.flags(0, 0, 0, c)
+	z = res == 0
+	cpu.flags(z, 0, 0, c)
 	return res
 
 def rrc(cpu, val):
 	c = val & 1
 	res = (val >> 1) | (c << 7)
-	cpu.flags(0, 0, 0, c)
+	z = res == 0
+	cpu.flags(z, 0, 0, c)
 	return res
 
 def rr(cpu, val):
 	c = val & 1
 	res = (val >> 1) | (cpu.regs.f_c << 7)
-	cpu.flags(0, 0, 0, c)
+	z = res == 0
+	cpu.flags(z, 0, 0, c)
+	return res
+
+def sla(cpu, val):
+	res = val << 1
+	z = (res & 0xff) == 0
+	c = res > 0xff
+	cpu.flags(z, 0, 0, c)
+	return res & 0xff
+
+def sra(cpu, val):
+	res = val >> 1 | (val & 0x80)
+	z = res == 0
+	cpu.flags(z, 0, 0, 0)
+	return res
+
+def swap(cpu, val):
+	hi = (val & 0xf0) >> 8
+	lo = val & 0xf
+	res = lo | hi
+	z = res == 0
+	cpu.flags(z, 0, 0, 0)
+	return res
+
+def srl(cpu, val):
+	res = val >> 1
+	z = res == 0
+	c = val & 1
+	cpu.flags(z, 0, 0, c)
+	return res
+
+def bit_op(cpu, pos, val):
+	res = (val >> pos) & 1
+	z = res == 0
+	cpu.flags(z, 0, 1, None)
+
+def res_op(cpu, pos, val):
+	res = val & ~(1 << pos)
+	z = res == 0
+	return res
+
+def set_op(cpu, pos, val):
+	res = val | (1 << pos)
+	z = res == 0
 	return res
 
 def add(cpu, val0, val1):
@@ -1197,7 +1244,8 @@ def jp_z_a16(cpu):
 
 def prefix_cb(cpu):
 	# 0xcb
-	pass
+	opcode = cpu.fetch_byte()
+	return instructions_cb[opcode](cpu)
 
 def call_z_a16(cpu):
 	# 0xcc
@@ -1531,6 +1579,1342 @@ def rst_38h(cpu):
 	cpu.regs.pc = 0x38
 	return 16
 
+def rlc_b(cpu):
+	# cb 0x00
+	cpu.regs.b = rlc(cpu, cpu.regs.b)
+	return 8
+
+def rlc_c(cpu):
+	# cb 0x01
+	cpu.regs.c = rlc(cpu, cpu.regs.c)
+	return 8
+
+def rlc_d(cpu):
+	# cb 0x02
+	cpu.regs.d = rlc(cpu, cpu.regs.d)
+	return 8
+
+def rlc_e(cpu):
+	# cb 0x03
+	cpu.regs.e = rlc(cpu, cpu.regs.e)
+	return 8
+
+def rlc_h(cpu):
+	# cb 0x04
+	cpu.regs.h = rlc(cpu, cpu.regs.h)
+	return 8
+
+def rlc_l(cpu):
+	# cb 0x05
+	cpu.regs.l = rlc(cpu, cpu.regs.l)
+	return 8
+
+def rlc_hl(cpu):
+	# cb 0x06
+	val = cpu.read(cpu.regs.hl)
+	val = rlc(cpu, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def rlc_a(cpu):
+	# cb 0x07
+	cpu.regs.a = rlc(cpu, cpu.regs.a)
+	return 8
+
+def rrc_b(cpu):
+	# cb 0x08
+	cpu.regs.b = rrc(cpu, cpu.regs.b)
+	return 8
+
+def rrc_c(cpu):
+	# cb 0x09
+	cpu.regs.c = rrc(cpu, cpu.regs.c)
+	return 8
+
+def rrc_d(cpu):
+	# cb 0x0a
+	cpu.regs.d = rrc(cpu, cpu.regs.d)
+	return 8
+
+def rrc_e(cpu):
+	# cb 0x0b
+	cpu.regs.e = rrc(cpu, cpu.regs.e)
+	return 8
+
+def rrc_h(cpu):
+	# cb 0x0c
+	cpu.regs.h = rrc(cpu, cpu.regs.h)
+	return 8
+
+def rrc_l(cpu):
+	# cb 0x0d
+	cpu.regs.l = rrc(cpu, cpu.regs.l)
+	return 8
+
+def rrc_hl(cpu):
+	# cb 0x0e
+	val = cpu.read(cpu.regs.hl)
+	val = rrc(cpu, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def rrc_a(cpu):
+	# cb 0x0f
+	cpu.regs.a = rrc(cpu, cpu.regs.a)
+	return 8
+
+def rl_b(cpu):
+	# cb 0x10
+	cpu.regs.b = rl(cpu, cpu.regs.b)
+	return 8
+
+def rl_c(cpu):
+	# cb 0x11
+	cpu.regs.c = rl(cpu, cpu.regs.c)
+	return 8
+
+def rl_d(cpu):
+	# cb 0x12
+	cpu.regs.d = rl(cpu, cpu.regs.d)
+	return 8
+
+def rl_e(cpu):
+	# cb 0x13
+	cpu.regs.e = rl(cpu, cpu.regs.e)
+	return 8
+
+def rl_h(cpu):
+	# cb 0x14
+	cpu.regs.h = rl(cpu, cpu.regs.h)
+	return 8
+
+def rl_l(cpu):
+	# cb 0x15
+	cpu.regs.l = rl(cpu, cpu.regs.l)
+	return 8
+
+def rl_hl(cpu):
+	# cb 0x16
+	val = cpu.read(cpu.regs.hl)
+	val = rl(cpu, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def rl_a(cpu):
+	# cb 0x17
+	cpu.regs.a = rl(cpu, cpu.regs.a)
+	return 8
+
+def rr_b(cpu):
+	# cb 0x18
+	cpu.regs.b = rr(cpu, cpu.regs.b)
+	return 8
+
+def rr_c(cpu):
+	# cb 0x19
+	cpu.regs.c = rr(cpu, cpu.regs.c)
+	return 8
+
+def rr_d(cpu):
+	# cb 0x1a
+	cpu.regs.d = rr(cpu, cpu.regs.d)
+	return 8
+
+def rr_e(cpu):
+	# cb 0x1b
+	cpu.regs.e = rr(cpu, cpu.regs.e)
+	return 8
+
+def rr_h(cpu):
+	# cb 0x1c
+	cpu.regs.h = rr(cpu, cpu.regs.h)
+	return 8
+
+def rr_l(cpu):
+	# cb 0x1d
+	cpu.regs.l = rr(cpu, cpu.regs.l)
+	return 8
+
+def rr_hl(cpu):
+	# cb 0x1e
+	val = cpu.read(cpu.regs.hl)
+	val = rr(cpu, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def rr_a(cpu):
+	# cb 0x1f
+	cpu.regs.a = rr(cpu, cpu.regs.a)
+	return 8
+
+def sla_b(cpu):
+	# cb 0x20
+	cpu.regs.b = sla(cpu, cpu.regs.b)
+	return 8
+
+def sla_c(cpu):
+	# cb 0x21
+	cpu.regs.c = sla(cpu, cpu.regs.c)
+	return 8
+
+def sla_d(cpu):
+	# cb 0x22
+	cpu.regs.d = sla(cpu, cpu.regs.d)
+	return 8
+
+def sla_e(cpu):
+	# cb 0x23
+	cpu.regs.e = sla(cpu, cpu.regs.e)
+	return 8
+
+def sla_h(cpu):
+	# cb 0x24
+	cpu.regs.h = sla(cpu, cpu.regs.h)
+	return 8
+
+def sla_l(cpu):
+	# cb 0x25
+	cpu.regs.l = sla(cpu, cpu.regs.l)
+	return 8
+
+def sla_hl(cpu):
+	# cb 0x26
+	val = cpu.read(cpu.regs.hl)
+	val = sla(cpu, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def sla_a(cpu):
+	# cb 0x27
+	cpu.regs.a = sla(cpu, cpu.regs.a)
+	return 8
+
+def sra_b(cpu):
+	# cb 0x28
+	cpu.regs.b = sra(cpu, cpu.regs.b)
+	return 8
+
+def sra_c(cpu):
+	# cb 0x29
+	cpu.regs.c = sra(cpu, cpu.regs.c)
+	return 8
+
+def sra_d(cpu):
+	# cb 0x2a
+	cpu.regs.d = sra(cpu, cpu.regs.d)
+	return 8
+
+def sra_e(cpu):
+	# cb 0x2b
+	cpu.regs.e = sra(cpu, cpu.regs.e)
+	return 8
+
+def sra_h(cpu):
+	# cb 0x2c
+	cpu.regs.h = sra(cpu, cpu.regs.h)
+	return 8
+
+def sra_l(cpu):
+	# cb 0x2d
+	cpu.regs.l = sra(cpu, cpu.regs.l)
+	return 8
+
+def sra_hl(cpu):
+	# cb 0x2e
+	val = cpu.read(cpu.regs.hl)
+	val = sra(cpu, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def sra_a(cpu):
+	# cb 0x2f
+	cpu.regs.a = sra(cpu, cpu.regs.a)
+	return 8
+
+def swap_b(cpu):
+	# cb 0x30
+	cpu.regs.b = swap(cpu, cpu.regs.b)
+	return 8
+
+def swap_c(cpu):
+	# cb 0x31
+	cpu.regs.c = swap(cpu, cpu.regs.c)
+	return 8
+
+def swap_d(cpu):
+	# cb 0x32
+	cpu.regs.d = swap(cpu, cpu.regs.d)
+	return 8
+
+def swap_e(cpu):
+	# cb 0x33
+	cpu.regs.e = swap(cpu, cpu.regs.e)
+	return 8
+
+def swap_h(cpu):
+	# cb 0x34
+	cpu.regs.h = swap(cpu, cpu.regs.h)
+	return 8
+
+def swap_l(cpu):
+	# cb 0x35
+	cpu.regs.l = swap(cpu, cpu.regs.l)
+	return 8
+
+def swap_hl(cpu):
+	# cb 0x36
+	val = cpu.read(cpu.regs.hl)
+	val = swap(cpu, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def swap_a(cpu):
+	# cb 0x37
+	cpu.regs.a = swap(cpu, cpu.regs.a)
+	return 8
+
+def srl_b(cpu):
+	# cb 0x38
+	cpu.regs.b = srl(cpu, cpu.regs.b)
+	return 8
+
+def srl_c(cpu):
+	# cb 0x39
+	cpu.regs.c = srl(cpu, cpu.regs.c)
+	return 8
+
+def srl_d(cpu):
+	# cb 0x3a
+	cpu.regs.d = srl(cpu, cpu.regs.d)
+	return 8
+
+def srl_e(cpu):
+	# cb 0x3b
+	cpu.regs.e = srl(cpu, cpu.regs.e)
+	return 8
+
+def srl_h(cpu):
+	# cb 0x3c
+	cpu.regs.h = srl(cpu, cpu.regs.h)
+	return 8
+
+def srl_l(cpu):
+	# cb 0x3d
+	cpu.regs.l = srl(cpu, cpu.regs.l)
+	return 8
+
+def srl_hl(cpu):
+	# cb 0x3e
+	val = cpu.read(cpu.regs.hl)
+	val = srl(cpu, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def srl_a(cpu):
+	# cb 0x3f
+	cpu.regs.a = srl(cpu, cpu.regs.a)
+	return 8
+
+def bit_0_b(cpu):
+	# cb 0x40
+	bit_op(cpu, 0, cpu.regs.b)
+	return 8
+
+def bit_0_c(cpu):
+	# cb 0x41
+	bit_op(cpu, 0, cpu.regs.c)
+	return 8
+
+def bit_0_d(cpu):
+	# cb 0x42
+	bit_op(cpu, 0, cpu.regs.d)
+	return 8
+
+def bit_0_e(cpu):
+	# cb 0x43
+	bit_op(cpu, 0, cpu.regs.e)
+	return 8
+
+def bit_0_h(cpu):
+	# cb 0x44
+	bit_op(cpu, 0, cpu.regs.h)
+	return 8
+
+def bit_0_l(cpu):
+	# cb 0x45
+	bit_op(cpu, 0, cpu.regs.l)
+	return 8
+
+def bit_0_hl(cpu):
+	# cb 0x46
+	val = cpu.read(cpu.regs.hl)
+	bit_op(cpu, 0, val)
+	return 16
+
+def bit_0_a(cpu):
+	# cb 0x47
+	bit_op(cpu, 0, cpu.regs.a)
+	return 8
+
+def bit_1_b(cpu):
+	# cb 0x48
+	bit_op(cpu, 1, cpu.regs.b)
+	return 8
+
+def bit_1_c(cpu):
+	# cb 0x49
+	bit_op(cpu, 1, cpu.regs.c)
+	return 8
+
+def bit_1_d(cpu):
+	# cb 0x4a
+	bit_op(cpu, 1, cpu.regs.d)
+	return 8
+
+def bit_1_e(cpu):
+	# cb 0x4b
+	bit_op(cpu, 1, cpu.regs.e)
+	return 8
+
+def bit_1_h(cpu):
+	# cb 0x4c
+	bit_op(cpu, 1, cpu.regs.h)
+	return 8
+
+def bit_1_l(cpu):
+	# cb 0x4d
+	bit_op(cpu, 1, cpu.regs.l)
+	return 8
+
+def bit_1_hl(cpu):
+	# cb 0x4e
+	val = cpu.read(cpu.regs.hl)
+	bit_op(cpu, 1, val)
+	return 16
+
+def bit_1_a(cpu):
+	# cb 0x4f
+	bit_op(cpu, 1, cpu.regs.a)
+	return 8
+
+def bit_2_b(cpu):
+	# cb 0x50
+	bit_op(cpu, 2, cpu.regs.b)
+	return 8
+
+def bit_2_c(cpu):
+	# cb 0x51
+	bit_op(cpu, 2, cpu.regs.c)
+	return 8
+
+def bit_2_d(cpu):
+	# cb 0x52
+	bit_op(cpu, 2, cpu.regs.d)
+	return 8
+
+def bit_2_e(cpu):
+	# cb 0x53
+	bit_op(cpu, 2, cpu.regs.e)
+	return 8
+
+def bit_2_h(cpu):
+	# cb 0x54
+	bit_op(cpu, 2, cpu.regs.h)
+	return 8
+
+def bit_2_l(cpu):
+	# cb 0x55
+	bit_op(cpu, 2, cpu.regs.l)
+	return 8
+
+def bit_2_hl(cpu):
+	# cb 0x56
+	val = cpu.read(cpu.regs.hl)
+	bit_op(cpu, 2, val)
+	return 16
+
+def bit_2_a(cpu):
+	# cb 0x57
+	bit_op(cpu, 2, cpu.regs.a)
+	return 8
+
+def bit_3_b(cpu):
+	# cb 0x58
+	bit_op(cpu, 3, cpu.regs.b)
+	return 8
+
+def bit_3_c(cpu):
+	# cb 0x59
+	bit_op(cpu, 3, cpu.regs.c)
+	return 8
+
+def bit_3_d(cpu):
+	# cb 0x5a
+	bit_op(cpu, 3, cpu.regs.d)
+	return 8
+
+def bit_3_e(cpu):
+	# cb 0x5b
+	bit_op(cpu, 3, cpu.regs.e)
+	return 8
+
+def bit_3_h(cpu):
+	# cb 0x5c
+	bit_op(cpu, 3, cpu.regs.h)
+	return 8
+
+def bit_3_l(cpu):
+	# cb 0x5d
+	bit_op(cpu, 3, cpu.regs.l)
+	return 8
+
+def bit_3_hl(cpu):
+	# cb 0x5e
+	val = cpu.read(cpu.regs.hl)
+	bit_op(cpu, 3, val)
+	return 16
+
+def bit_3_a(cpu):
+	# cb 0x5f
+	bit_op(cpu, 3, cpu.regs.a)
+	return 8
+
+def bit_4_b(cpu):
+	# cb 0x60
+	bit_op(cpu, 4, cpu.regs.b)
+	return 8
+
+def bit_4_c(cpu):
+	# cb 0x61
+	bit_op(cpu, 4, cpu.regs.c)
+	return 8
+
+def bit_4_d(cpu):
+	# cb 0x62
+	bit_op(cpu, 4, cpu.regs.d)
+	return 8
+
+def bit_4_e(cpu):
+	# cb 0x63
+	bit_op(cpu, 4, cpu.regs.e)
+	return 8
+
+def bit_4_h(cpu):
+	# cb 0x64
+	bit_op(cpu, 4, cpu.regs.h)
+	return 8
+
+def bit_4_l(cpu):
+	# cb 0x65
+	bit_op(cpu, 4, cpu.regs.l)
+	return 8
+
+def bit_4_hl(cpu):
+	# cb 0x66
+	val = cpu.read(cpu.regs.hl)
+	bit_op(cpu, 4, val)
+	return 16
+
+def bit_4_a(cpu):
+	# cb 0x67
+	bit_op(cpu, 4, cpu.regs.a)
+	return 8
+
+def bit_5_b(cpu):
+	# cb 0x68
+	bit_op(cpu, 5, cpu.regs.b)
+	return 8
+
+def bit_5_c(cpu):
+	# cb 0x69
+	bit_op(cpu, 5, cpu.regs.c)
+	return 8
+
+def bit_5_d(cpu):
+	# cb 0x6a
+	bit_op(cpu, 5, cpu.regs.d)
+	return 8
+
+def bit_5_e(cpu):
+	# cb 0x6b
+	bit_op(cpu, 5, cpu.regs.e)
+	return 8
+
+def bit_5_h(cpu):
+	# cb 0x6c
+	bit_op(cpu, 5, cpu.regs.h)
+	return 8
+
+def bit_5_l(cpu):
+	# cb 0x6d
+	bit_op(cpu, 5, cpu.regs.l)
+	return 8
+
+def bit_5_hl(cpu):
+	# cb 0x6e
+	val = cpu.read(cpu.regs.hl)
+	bit_op(cpu, 5, val)
+	return 16
+
+def bit_5_a(cpu):
+	# cb 0x6f
+	bit_op(cpu, 5, cpu.regs.a)
+	return 8
+
+def bit_6_b(cpu):
+	# cb 0x70
+	bit_op(cpu, 6, cpu.regs.b)
+	return 8
+
+def bit_6_c(cpu):
+	# cb 0x71
+	bit_op(cpu, 6, cpu.regs.c)
+	return 8
+
+def bit_6_d(cpu):
+	# cb 0x72
+	bit_op(cpu, 6, cpu.regs.d)
+	return 8
+
+def bit_6_e(cpu):
+	# cb 0x73
+	bit_op(cpu, 6, cpu.regs.e)
+	return 8
+
+def bit_6_h(cpu):
+	# cb 0x74
+	bit_op(cpu, 6, cpu.regs.h)
+	return 8
+
+def bit_6_l(cpu):
+	# cb 0x75
+	bit_op(cpu, 6, cpu.regs.l)
+	return 8
+
+def bit_6_hl(cpu):
+	# cb 0x76
+	val = cpu.read(cpu.regs.hl)
+	bit_op(cpu, 6, val)
+	return 16
+
+def bit_6_a(cpu):
+	# cb 0x77
+	bit_op(cpu, 6, cpu.regs.a)
+	return 8
+
+def bit_7_b(cpu):
+	# cb 0x78
+	bit_op(cpu, 7, cpu.regs.b)
+	return 8
+
+def bit_7_c(cpu):
+	# cb 0x79
+	bit_op(cpu, 7, cpu.regs.c)
+	return 8
+
+def bit_7_d(cpu):
+	# cb 0x7a
+	bit_op(cpu, 7, cpu.regs.d)
+	return 8
+
+def bit_7_e(cpu):
+	# cb 0x7b
+	bit_op(cpu, 7, cpu.regs.e)
+	return 8
+
+def bit_7_h(cpu):
+	# cb 0x7c
+	bit_op(cpu, 7, cpu.regs.h)
+	return 8
+
+def bit_7_l(cpu):
+	# cb 0x7d
+	bit_op(cpu, 7, cpu.regs.l)
+	return 8
+
+def bit_7_hl(cpu):
+	# cb 0x7e
+	val = cpu.read(cpu.regs.hl)
+	bit_op(cpu, 7, val)
+	return 16
+
+def bit_7_a(cpu):
+	# cb 0x7f
+	bit_op(cpu, 7, cpu.regs.a)
+	return 8
+
+def res_0_b(cpu):
+	# cb 0x80
+	cpu.regs.b = res_op(cpu, 0, cpu.regs.b)
+	return 8
+
+def res_0_c(cpu):
+	# cb 0x81
+	cpu.regs.c = res_op(cpu, 0, cpu.regs.c)
+	return 8
+
+def res_0_d(cpu):
+	# cb 0x82
+	cpu.regs.d = res_op(cpu, 0, cpu.regs.d)
+	return 8
+
+def res_0_e(cpu):
+	# cb 0x83
+	cpu.regs.e = res_op(cpu, 0, cpu.regs.e)
+	return 8
+
+def res_0_h(cpu):
+	# cb 0x84
+	cpu.regs.h = res_op(cpu, 0, cpu.regs.h)
+	return 8
+
+def res_0_l(cpu):
+	# cb 0x85
+	cpu.regs.l = res_op(cpu, 0, cpu.regs.l)
+	return 8
+
+def res_0_hl(cpu):
+	# cb 0x86
+	val = cpu.read(cpu.regs.hl)
+	val = res_op(cpu, 0, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def res_0_a(cpu):
+	# cb 0x87
+	cpu.regs.a = res_op(cpu, 0, cpu.regs.a)
+	return 8
+
+def res_1_b(cpu):
+	# cb 0x88
+	cpu.regs.b = res_op(cpu, 1, cpu.regs.b)
+	return 8
+
+def res_1_c(cpu):
+	# cb 0x89
+	cpu.regs.c = res_op(cpu, 1, cpu.regs.c)
+	return 8
+
+def res_1_d(cpu):
+	# cb 0x8a
+	cpu.regs.d = res_op(cpu, 1, cpu.regs.d)
+	return 8
+
+def res_1_e(cpu):
+	# cb 0x8b
+	cpu.regs.e = res_op(cpu, 1, cpu.regs.e)
+	return 8
+
+def res_1_h(cpu):
+	# cb 0x8c
+	cpu.regs.h = res_op(cpu, 1, cpu.regs.h)
+	return 8
+
+def res_1_l(cpu):
+	# cb 0x8d
+	cpu.regs.l = res_op(cpu, 1, cpu.regs.l)
+	return 8
+
+def res_1_hl(cpu):
+	# cb 0x8e
+	val = cpu.read(cpu.regs.hl)
+	val = res_op(cpu, 1, val)
+	bit_op(cpu, 1, val)
+	return 16
+
+def res_1_a(cpu):
+	# cb 0x8f
+	cpu.regs.a = res_op(cpu, 1, cpu.regs.a)
+	return 8
+
+def res_2_b(cpu):
+	# cb 0x90
+	cpu.regs.b = res_op(cpu, 2, cpu.regs.b)
+	return 8
+
+def res_2_c(cpu):
+	# cb 0x91
+	cpu.regs.c = res_op(cpu, 2, cpu.regs.c)
+	return 8
+
+def res_2_d(cpu):
+	# cb 0x92
+	cpu.regs.d = res_op(cpu, 2, cpu.regs.d)
+	return 8
+
+def res_2_e(cpu):
+	# cb 0x93
+	cpu.regs.e = res_op(cpu, 2, cpu.regs.e)
+	return 8
+
+def res_2_h(cpu):
+	# cb 0x94
+	cpu.regs.h = res_op(cpu, 2, cpu.regs.h)
+	return 8
+
+def res_2_l(cpu):
+	# cb 0x95
+	cpu.regs.l = res_op(cpu, 2, cpu.regs.l)
+	return 8
+
+def res_2_hl(cpu):
+	# cb 0x96
+	val = cpu.read(cpu.regs.hl)
+	val = res_op(cpu, 2, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def res_2_a(cpu):
+	# cb 0x97
+	cpu.regs.a = res_op(cpu, 2, cpu.regs.a)
+	return 8
+
+def res_3_b(cpu):
+	# cb 0x98
+	cpu.regs.b = res_op(cpu, 3, cpu.regs.b)
+	return 8
+
+def res_3_c(cpu):
+	# cb 0x99
+	cpu.regs.c = res_op(cpu, 3, cpu.regs.c)
+	return 8
+
+def res_3_d(cpu):
+	# cb 0x9a
+	cpu.regs.d = res_op(cpu, 3, cpu.regs.d)
+	return 8
+
+def res_3_e(cpu):
+	# cb 0x9b
+	cpu.regs.e = res_op(cpu, 3, cpu.regs.e)
+	return 8
+
+def res_3_h(cpu):
+	# cb 0x9c
+	cpu.regs.h = res_op(cpu, 3, cpu.regs.h)
+	return 8
+
+def res_3_l(cpu):
+	# cb 0x9d
+	cpu.regs.l = res_op(cpu, 3, cpu.regs.l)
+	return 8
+
+def res_3_hl(cpu):
+	# cb 0x9e
+	val = cpu.read(cpu.regs.hl)
+	val = res_op(cpu, 3, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def res_3_a(cpu):
+	# cb 0x9f
+	cpu.regs.a = res_op(cpu, 3, cpu.regs.a)
+	return 8
+
+def res_4_b(cpu):
+	# cb 0xa0
+	cpu.regs.b = res_op(cpu, 4, cpu.regs.b)
+	return 8
+
+def res_4_c(cpu):
+	# cb 0xa1
+	cpu.regs.c = res_op(cpu, 4, cpu.regs.c)
+	return 8
+
+def res_4_d(cpu):
+	# cb 0xa2
+	cpu.regs.d = res_op(cpu, 4, cpu.regs.d)
+	return 8
+
+def res_4_e(cpu):
+	# cb 0xa3
+	cpu.regs.e = res_op(cpu, 4, cpu.regs.e)
+	return 8
+
+def res_4_h(cpu):
+	# cb 0xa4
+	cpu.regs.h = res_op(cpu, 4, cpu.regs.h)
+	return 8
+
+def res_4_l(cpu):
+	# cb 0xa5
+	cpu.regs.l = res_op(cpu, 4, cpu.regs.l)
+	return 8
+
+def res_4_hl(cpu):
+	# cb 0xa6
+	val = cpu.read(cpu.regs.hl)
+	val = res_op(cpu, 4, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def res_4_a(cpu):
+	# cb 0xa7
+	cpu.regs.a = res_op(cpu, 4, cpu.regs.a)
+	return 8
+
+def res_5_b(cpu):
+	# cb 0xa8
+	cpu.regs.b = res_op(cpu, 5, cpu.regs.b)
+	return 8
+
+def res_5_c(cpu):
+	# cb 0xa9
+	cpu.regs.c = res_op(cpu, 5, cpu.regs.c)
+	return 8
+
+def res_5_d(cpu):
+	# cb 0xaa
+	cpu.regs.d = res_op(cpu, 5, cpu.regs.d)
+	return 8
+
+def res_5_e(cpu):
+	# cb 0xab
+	cpu.regs.e = res_op(cpu, 5, cpu.regs.e)
+	return 8
+
+def res_5_h(cpu):
+	# cb 0xac
+	cpu.regs.h = res_op(cpu, 5, cpu.regs.h)
+	return 8
+
+def res_5_l(cpu):
+	# cb 0xad
+	cpu.regs.l = res_op(cpu, 5, cpu.regs.l)
+	return 8
+
+def res_5_hl(cpu):
+	# cb 0xae
+	val = cpu.read(cpu.regs.hl)
+	val = res_op(cpu, 5, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def res_5_a(cpu):
+	# cb 0xaf
+	cpu.regs.a = res_op(cpu, 5, cpu.regs.a)
+	return 8
+
+def res_6_b(cpu):
+	# cb 0xb0
+	cpu.regs.b = res_op(cpu, 6, cpu.regs.b)
+	return 8
+
+def res_6_c(cpu):
+	# cb 0xb1
+	cpu.regs.c = res_op(cpu, 6, cpu.regs.c)
+	return 8
+
+def res_6_d(cpu):
+	# cb 0xb2
+	cpu.regs.d = res_op(cpu, 6, cpu.regs.d)
+	return 8
+
+def res_6_e(cpu):
+	# cb 0xb3
+	cpu.regs.e = res_op(cpu, 6, cpu.regs.e)
+	return 8
+
+def res_6_h(cpu):
+	# cb 0xb4
+	cpu.regs.h = res_op(cpu, 6, cpu.regs.h)
+	return 8
+
+def res_6_l(cpu):
+	# cb 0xb5
+	cpu.regs.l = res_op(cpu, 6, cpu.regs.l)
+	return 8
+
+def res_6_hl(cpu):
+	# cb 0xb6
+	val = cpu.read(cpu.regs.hl)
+	val = res_op(cpu, 6, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def res_6_a(cpu):
+	# cb 0xb7
+	cpu.regs.a = res_op(cpu, 6, cpu.regs.a)
+	return 8
+
+def res_7_b(cpu):
+	# cb 0xb8
+	cpu.regs.b = res_op(cpu, 7, cpu.regs.b)
+	return 8
+
+def res_7_c(cpu):
+	# cb 0xb9
+	cpu.regs.c = res_op(cpu, 7, cpu.regs.c)
+	return 8
+
+def res_7_d(cpu):
+	# cb 0xba
+	cpu.regs.d = res_op(cpu, 7, cpu.regs.d)
+	return 8
+
+def res_7_e(cpu):
+	# cb 0xbb
+	cpu.regs.e = res_op(cpu, 7, cpu.regs.e)
+	return 8
+
+def res_7_h(cpu):
+	# cb 0xbc
+	cpu.regs.h = res_op(cpu, 7, cpu.regs.h)
+	return 8
+
+def res_7_l(cpu):
+	# cb 0xbd
+	cpu.regs.l = res_op(cpu, 7, cpu.regs.l)
+	return 8
+
+def res_7_hl(cpu):
+	# cb 0xbe
+	val = cpu.read(cpu.regs.hl)
+	val = res_op(cpu, 7, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def res_7_a(cpu):
+	# cb 0xbf
+	cpu.regs.a = res_op(cpu, 7, cpu.regs.a)
+	return 8
+
+def set_0_b(cpu):
+	# cb 0xc0
+	cpu.regs.b = set_op(cpu, 0, cpu.regs.b)
+	return 8
+
+def set_0_c(cpu):
+	# cb 0xc1
+	cpu.regs.c = set_op(cpu, 0, cpu.regs.c)
+	return 8
+
+def set_0_d(cpu):
+	# cb 0xc2
+	cpu.regs.d = set_op(cpu, 0, cpu.regs.d)
+	return 8
+
+def set_0_e(cpu):
+	# cb 0xc3
+	cpu.regs.e = set_op(cpu, 0, cpu.regs.e)
+	return 8
+
+def set_0_h(cpu):
+	# cb 0xc4
+	cpu.regs.h = set_op(cpu, 0, cpu.regs.h)
+	return 8
+
+def set_0_l(cpu):
+	# cb 0xc5
+	cpu.regs.l = set_op(cpu, 0, cpu.regs.l)
+	return 8
+
+def set_0_hl(cpu):
+	# cb 0xc6
+	val = cpu.read(cpu.regs.hl)
+	val = set_op(cpu, 0, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def set_0_a(cpu):
+	# cb 0xc7
+	cpu.regs.a = set_op(cpu, 0, cpu.regs.a)
+	return 8
+
+def set_1_b(cpu):
+	# cb 0xc8
+	cpu.regs.b = set_op(cpu, 1, cpu.regs.b)
+	return 8
+
+def set_1_c(cpu):
+	# cb 0xc9
+	cpu.regs.c = set_op(cpu, 1, cpu.regs.c)
+	return 8
+
+def set_1_d(cpu):
+	# cb 0xca
+	cpu.regs.d = set_op(cpu, 1, cpu.regs.d)
+	return 8
+
+def set_1_e(cpu):
+	# cb 0xcb
+	cpu.regs.e = set_op(cpu, 1, cpu.regs.e)
+	return 8
+
+def set_1_h(cpu):
+	# cb 0xcc
+	cpu.regs.h = set_op(cpu, 1, cpu.regs.h)
+	return 8
+
+def set_1_l(cpu):
+	# cb 0xcd
+	cpu.regs.l = set_op(cpu, 1, cpu.regs.l)
+	return 8
+
+def set_1_hl(cpu):
+	# cb 0xce
+	val = cpu.read(cpu.regs.hl)
+	val = set_op(cpu, 1, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def set_1_a(cpu):
+	# cb 0xcf
+	cpu.regs.a = set_op(cpu, 1, cpu.regs.a)
+	return 8
+
+def set_2_b(cpu):
+	# cb 0xd0
+	cpu.regs.b = set_op(cpu, 2, cpu.regs.b)
+	return 8
+
+def set_2_c(cpu):
+	# cb 0xd1
+	cpu.regs.c = set_op(cpu, 2, cpu.regs.c)
+	return 8
+
+def set_2_d(cpu):
+	# cb 0xd2
+	cpu.regs.d = set_op(cpu, 2, cpu.regs.d)
+	return 8
+
+def set_2_e(cpu):
+	# cb 0xd3
+	cpu.regs.e = set_op(cpu, 2, cpu.regs.e)
+	return 8
+
+def set_2_h(cpu):
+	# cb 0xd4
+	cpu.regs.h = set_op(cpu, 2, cpu.regs.h)
+	return 8
+
+def set_2_l(cpu):
+	# cb 0xd5
+	cpu.regs.l = set_op(cpu, 2, cpu.regs.l)
+	return 8
+
+def set_2_hl(cpu):
+	# cb 0xd6
+	val = cpu.read(cpu.regs.hl)
+	val = set_op(cpu, 2, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def set_2_a(cpu):
+	# cb 0xd7
+	cpu.regs.a = set_op(cpu, 2, cpu.regs.a)
+	return 8
+
+def set_3_b(cpu):
+	# cb 0xd8
+	cpu.regs.b = set_op(cpu, 3, cpu.regs.b)
+	return 8
+
+def set_3_c(cpu):
+	# cb 0xd9
+	cpu.regs.c = set_op(cpu, 3, cpu.regs.c)
+	return 8
+
+def set_3_d(cpu):
+	# cb 0xda
+	cpu.regs.d = set_op(cpu, 3, cpu.regs.d)
+	return 8
+
+def set_3_e(cpu):
+	# cb 0xdb
+	cpu.regs.e = set_op(cpu, 3, cpu.regs.e)
+	return 8
+
+def set_3_h(cpu):
+	# cb 0xdc
+	cpu.regs.h = set_op(cpu, 3, cpu.regs.h)
+	return 8
+
+def set_3_l(cpu):
+	# cb 0xdd
+	cpu.regs.l = set_op(cpu, 3, cpu.regs.l)
+	return 8
+
+def set_3_hl(cpu):
+	# cb 0xde
+	val = cpu.read(cpu.regs.hl)
+	val = set_op(cpu, 3, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def set_3_a(cpu):
+	# cb 0xdf
+	cpu.regs.a = set_op(cpu, 3, cpu.regs.a)
+	return 8
+
+def set_4_b(cpu):
+	# cb 0xe0
+	cpu.regs.b = set_op(cpu, 4, cpu.regs.b)
+	return 8
+
+def set_4_c(cpu):
+	# cb 0xe1
+	cpu.regs.c = set_op(cpu, 4, cpu.regs.c)
+	return 8
+
+def set_4_d(cpu):
+	# cb 0xe2
+	cpu.regs.d = set_op(cpu, 4, cpu.regs.d)
+	return 8
+
+def set_4_e(cpu):
+	# cb 0xe3
+	cpu.regs.e = set_op(cpu, 4, cpu.regs.e)
+	return 8
+
+def set_4_h(cpu):
+	# cb 0xe4
+	cpu.regs.h = set_op(cpu, 4, cpu.regs.h)
+	return 8
+
+def set_4_l(cpu):
+	# cb 0xe5
+	cpu.regs.l = set_op(cpu, 4, cpu.regs.l)
+	return 8
+
+def set_4_hl(cpu):
+	# cb 0xe6
+	val = cpu.read(cpu.regs.hl)
+	val = set_op(cpu, 4, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def set_4_a(cpu):
+	# cb 0xe7
+	cpu.regs.a = set_op(cpu, 4, cpu.regs.a)
+	return 8
+
+def set_5_b(cpu):
+	# cb 0xe8
+	cpu.regs.b = set_op(cpu, 5, cpu.regs.b)
+	return 8
+
+def set_5_c(cpu):
+	# cb 0xe9
+	cpu.regs.c = set_op(cpu, 5, cpu.regs.c)
+	return 8
+
+def set_5_d(cpu):
+	# cb 0xea
+	cpu.regs.d = set_op(cpu, 5, cpu.regs.d)
+	return 8
+
+def set_5_e(cpu):
+	# cb 0xeb
+	cpu.regs.e = set_op(cpu, 5, cpu.regs.e)
+	return 8
+
+def set_5_h(cpu):
+	# cb 0xec
+	cpu.regs.h = set_op(cpu, 5, cpu.regs.h)
+	return 8
+
+def set_5_l(cpu):
+	# cb 0xed
+	cpu.regs.l = set_op(cpu, 5, cpu.regs.l)
+	return 8
+
+def set_5_hl(cpu):
+	# cb 0xee
+	val = cpu.read(cpu.regs.hl)
+	val = set_op(cpu, 5, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def set_5_a(cpu):
+	# cb 0xef
+	cpu.regs.a = set_op(cpu, 5, cpu.regs.a)
+	return 8
+
+def set_6_b(cpu):
+	# cb 0xf0
+	cpu.regs.b = set_op(cpu, 6, cpu.regs.b)
+	return 8
+
+def set_6_c(cpu):
+	# cb 0xf1
+	cpu.regs.c = set_op(cpu, 6, cpu.regs.c)
+	return 8
+
+def set_6_d(cpu):
+	# cb 0xf2
+	cpu.regs.d = set_op(cpu, 6, cpu.regs.d)
+	return 8
+
+def set_6_e(cpu):
+	# cb 0xf3
+	cpu.regs.e = set_op(cpu, 6, cpu.regs.e)
+	return 8
+
+def set_6_h(cpu):
+	# cb 0xf4
+	cpu.regs.h = set_op(cpu, 6, cpu.regs.h)
+	return 8
+
+def set_6_l(cpu):
+	# cb 0xf5
+	cpu.regs.l = set_op(cpu, 6, cpu.regs.l)
+	return 8
+
+def set_6_hl(cpu):
+	# cb 0xf6
+	val = cpu.read(cpu.regs.hl)
+	val = set_op(cpu, 6, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def set_6_a(cpu):
+	# cb 0xf7
+	cpu.regs.a = set_op(cpu, 6, cpu.regs.a)
+	return 8
+
+def set_7_b(cpu):
+	# cb 0xf8
+	cpu.regs.b = set_op(cpu, 7, cpu.regs.b)
+	return 8
+
+def set_7_c(cpu):
+	# cb 0xf9
+	cpu.regs.c = set_op(cpu, 7, cpu.regs.c)
+	return 8
+
+def set_7_d(cpu):
+	# cb 0xfa
+	cpu.regs.d = set_op(cpu, 7, cpu.regs.d)
+	return 8
+
+def set_7_e(cpu):
+	# cb 0xfb
+	cpu.regs.e = set_op(cpu, 7, cpu.regs.e)
+	return 8
+
+def set_7_h(cpu):
+	# cb 0xfc
+	cpu.regs.h = set_op(cpu, 7, cpu.regs.h)
+	return 8
+
+def set_7_l(cpu):
+	# cb 0xfd
+	cpu.regs.l = set_op(cpu, 7, cpu.regs.l)
+	return 8
+
+def set_7_hl(cpu):
+	# cb 0xfe
+	val = cpu.read(cpu.regs.hl)
+	val = set_op(cpu, 7, val)
+	cpu.write(cpu.regs.hl, val)
+	return 16
+
+def set_7_a(cpu):
+	# cb 0xff
+	cpu.regs.a = set_op(cpu, 7, cpu.regs.a)
+	return 8
+
 instructions = [
 	# 0x0_
 	nop,
@@ -1804,4 +3188,279 @@ instructions = [
 	op_0xfd,
 	cp_d8,
 	rst_38h,
+]
+
+instructions_cb = [
+	# cb 0x0_
+	rlc_b,
+	rlc_c,
+	rlc_d,
+	rlc_e,
+	rlc_h,
+	rlc_l,
+	rlc_hl,
+	rlc_a,
+	rrc_b,
+	rrc_c,
+	rrc_d,
+	rrc_e,
+	rrc_h,
+	rrc_l,
+	rrc_hl,
+	rrc_a,
+	# cb 0x1_
+	rl_b,
+	rl_c,
+	rl_d,
+	rl_e,
+	rl_h,
+	rl_l,
+	rl_hl,
+	rl_a,
+	rr_b,
+	rr_c,
+	rr_d,
+	rr_e,
+	rr_h,
+	rr_l,
+	rr_hl,
+	rr_a,
+	# cb 0x2_
+	sla_b,
+	sla_c,
+	sla_d,
+	sla_e,
+	sla_h,
+	sla_l,
+	sla_hl,
+	sla_a,
+	sra_b,
+	sra_c,
+	sra_d,
+	sra_e,
+	sra_h,
+	sra_l,
+	sra_hl,
+	sra_a,
+	# cb 0x3_
+	swap_b,
+	swap_c,
+	swap_d,
+	swap_e,
+	swap_h,
+	swap_l,
+	swap_hl,
+	swap_a,
+	srl_b,
+	srl_c,
+	srl_d,
+	srl_e,
+	srl_h,
+	srl_l,
+	srl_hl,
+	srl_a,
+	# cb 0x4_
+	bit_0_b,
+	bit_0_c,
+	bit_0_d,
+	bit_0_e,
+	bit_0_h,
+	bit_0_l,
+	bit_0_hl,
+	bit_0_a,
+	bit_1_b,
+	bit_1_c,
+	bit_1_d,
+	bit_1_e,
+	bit_1_h,
+	bit_1_l,
+	bit_1_hl,
+	bit_1_a,
+	# cb 0x5_
+	bit_2_b,
+	bit_2_c,
+	bit_2_d,
+	bit_2_e,
+	bit_2_h,
+	bit_2_l,
+	bit_2_hl,
+	bit_2_a,
+	bit_3_b,
+	bit_3_c,
+	bit_3_d,
+	bit_3_e,
+	bit_3_h,
+	bit_3_l,
+	bit_3_hl,
+	bit_3_a,
+	# cb 0x6_
+	bit_4_b,
+	bit_4_c,
+	bit_4_d,
+	bit_4_e,
+	bit_4_h,
+	bit_4_l,
+	bit_4_hl,
+	bit_4_a,
+	bit_5_b,
+	bit_5_c,
+	bit_5_d,
+	bit_5_e,
+	bit_5_h,
+	bit_5_l,
+	bit_5_hl,
+	bit_5_a,
+	# cb 0x7_
+	bit_6_b,
+	bit_6_c,
+	bit_6_d,
+	bit_6_e,
+	bit_6_h,
+	bit_6_l,
+	bit_6_hl,
+	bit_6_a,
+	bit_7_b,
+	bit_7_c,
+	bit_7_d,
+	bit_7_e,
+	bit_7_h,
+	bit_7_l,
+	bit_7_hl,
+	bit_7_a,
+	# cb 0x8_
+	res_0_b,
+	res_0_c,
+	res_0_d,
+	res_0_e,
+	res_0_h,
+	res_0_l,
+	res_0_hl,
+	res_0_a,
+	res_1_b,
+	res_1_c,
+	res_1_d,
+	res_1_e,
+	res_1_h,
+	res_1_l,
+	res_1_hl,
+	res_1_a,
+	# cb 0x9_
+	res_2_b,
+	res_2_c,
+	res_2_d,
+	res_2_e,
+	res_2_h,
+	res_2_l,
+	res_2_hl,
+	res_2_a,
+	res_3_b,
+	res_3_c,
+	res_3_d,
+	res_3_e,
+	res_3_h,
+	res_3_l,
+	res_3_hl,
+	res_3_a,
+	# cb 0xa_
+	res_4_b,
+	res_4_c,
+	res_4_d,
+	res_4_e,
+	res_4_h,
+	res_4_l,
+	res_4_hl,
+	res_4_a,
+	res_5_b,
+	res_5_c,
+	res_5_d,
+	res_5_e,
+	res_5_h,
+	res_5_l,
+	res_5_hl,
+	res_5_a,
+	# cb 0xb_
+	res_6_b,
+	res_6_c,
+	res_6_d,
+	res_6_e,
+	res_6_h,
+	res_6_l,
+	res_6_hl,
+	res_6_a,
+	res_7_b,
+	res_7_c,
+	res_7_d,
+	res_7_e,
+	res_7_h,
+	res_7_l,
+	res_7_hl,
+	res_7_a,
+	# cb 0xc_
+	set_0_b,
+	set_0_c,
+	set_0_d,
+	set_0_e,
+	set_0_h,
+	set_0_l,
+	set_0_hl,
+	set_0_a,
+	set_1_b,
+	set_1_c,
+	set_1_d,
+	set_1_e,
+	set_1_h,
+	set_1_l,
+	set_1_hl,
+	set_1_a,
+	# cb 0xd_
+	set_2_b,
+	set_2_c,
+	set_2_d,
+	set_2_e,
+	set_2_h,
+	set_2_l,
+	set_2_hl,
+	set_2_a,
+	set_3_b,
+	set_3_c,
+	set_3_d,
+	set_3_e,
+	set_3_h,
+	set_3_l,
+	set_3_hl,
+	set_3_a,
+	# cb 0xe_
+	set_4_b,
+	set_4_c,
+	set_4_d,
+	set_4_e,
+	set_4_h,
+	set_4_l,
+	set_4_hl,
+	set_4_a,
+	set_5_b,
+	set_5_c,
+	set_5_d,
+	set_5_e,
+	set_5_h,
+	set_5_l,
+	set_5_hl,
+	set_5_a,
+	# cb 0xf_
+	set_6_b,
+	set_6_c,
+	set_6_d,
+	set_6_e,
+	set_6_h,
+	set_6_l,
+	set_6_hl,
+	set_6_a,
+	set_7_b,
+	set_7_c,
+	set_7_d,
+	set_7_e,
+	set_7_h,
+	set_7_l,
+	set_7_hl,
+	set_7_a
 ]
