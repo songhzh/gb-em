@@ -234,7 +234,8 @@ def rrca(cpu):
 
 def stop_0(cpu):
 	# 0x10
-	pass
+	cpu.regs.pc += 1
+	return 4
 
 def ld_de_d16(cpu):
 	# 0x11
@@ -458,7 +459,8 @@ def ld_hl_d8(cpu):
 
 def scf(cpu):
 	# 0x37
-	pass
+	cpu.flags(None, 0, 0, 1)
+	return 4
 
 def jr_c_r8(cpu):
 	# 0x38
@@ -504,7 +506,9 @@ def ld_a_d8(cpu):
 
 def ccf(cpu):
 	# 0x3f
-	pass
+	c = cpu.regs.f_c ^ 1
+	cpu.flags(None, 0, 0, c)
+	return 4
 
 def ld_b_b(cpu):
 	# 0x40
@@ -1399,7 +1403,9 @@ def rst_18h(cpu):
 
 def ldh_a8_a(cpu):
 	# 0xe0
-	pass
+	op0 = 0xff00 + cpu.fetch_byte()
+	cpu.write(op0, cpu.regs.a)
+	return 12
 
 def pop_hl(cpu):
 	# 0xe1
@@ -1410,8 +1416,9 @@ def pop_hl(cpu):
 
 def ld_c_a(cpu):
 	# 0xe2
-	cpu.write(cpu.regs.c, cpu.regs.a)
-	cpu.regs.pc += 1
+	val = 0xff00 + cpu.regs.c
+	cpu.write(val, cpu.regs.a)
+	cpu.pc += 1
 	return 8
 
 def op_0xe3(cpu):
@@ -1490,7 +1497,9 @@ def rst_28h(cpu):
 
 def ldh_a_a8(cpu):
 	# 0xf0
-	pass
+	op0 = 0xff00 + cpu.fetch_byte()
+	cpu.write(cpu.regs.a, op0)
+	return 12
 
 def pop_af(cpu):
 	# 0xf1
@@ -1501,9 +1510,9 @@ def pop_af(cpu):
 
 def ld_a_c(cpu):
 	# 0xf2
-	val = cpu.read(cpu.regs.c)
-	cpu.regs.a = val
-	cpu.regs.pc += 1
+	val = 0xff00 + cpu.regs.c
+	cpu.write(cpu.regs.a, val)
+	cpu.pc += 1
 	return 8
 
 def di(cpu):

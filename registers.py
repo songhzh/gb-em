@@ -132,14 +132,50 @@ class Registers:
   def pc(self, nn):
     self._pc = nn & 0xffff
 
+  @property
+  def f_z(self):
+    return (self.f >> 7) & 1
+
+  @f_z.setter
+  def f_z(self, bit):
+    self.f = self.set_bit(self.f, 7) if bit else self.clr_bit(self.f, 7)
+
+  @property
+  def f_n(self):
+    return (self.f >> 6) & 1
+
+  @f_n.setter
+  def f_n(self, bit):
+    self.f = self.set_bit(self.f, 6) if bit else self.clr_bit(self.f, 6)
+
+  @property
+  def f_h(self):
+    return (self.f >> 5) & 1
+
+  @f_h.setter
+  def f_h(self, bit):
+    self.f = self.set_bit(self.f, 5) if bit else self.clr_bit(self.f, 5)
+
+  @property
+  def f_c(self):
+    return (self.f >> 4) & 1
+
+  @f_c.setter
+  def f_c(self, bit):
+    self.f = self.set_bit(self.f, 4) if bit else self.clr_bit(self.f, 4)
+
+  def set_bit(self, val, pos):
+    return val | (1 << pos)
+
+  def clr_bit(self, val, pos):
+    return val & ~(1 << pos)
+
   def flags(self, z, n, h, c):
-    f = 0
     if z is not None:
-      f |= z << FLAG_Z
+      self.f_z = z
     if n is not None:
-      f |= n << FLAG_N
+      self.f_n = n
     if h is not None:
-      f |= h << FLAG_H
+      self.f_h = h
     if c is not None:
-      f |= c << FLAG_C
-    self.f = f
+      self.f_c = c
