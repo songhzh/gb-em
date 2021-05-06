@@ -7,14 +7,23 @@ class Cpu:
     self.cycles = 0
     self.bus = bus
 
-  def bus_read(self, addr):
+  def read(self, addr):
     return self.bus.read_mem(addr)
 
-  def bus_write(self, addr, val):
+  def read_word(self, addr):
+    hi = self.read(addr+1)
+    lo = self.read(addr)
+    return (hi << 8) | lo
+
+  def write(self, addr, val):
     self.bus.write_mem(addr, val)
 
+  def write_word(self, addr, val):
+    self.write(addr, val & 0xff)
+    self.write(addr+1, val >> 8)
+
   def fetch_byte(self):
-    byte = self.bus_read(self.regs.pc)
+    byte = self.read(self.regs.pc)
     self.regs.pc += 1
     return byte
 

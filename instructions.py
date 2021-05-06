@@ -38,16 +38,68 @@ def rrc(cpu, val):
 	cpu.flags(0, 0, 0, c)
 	return res
 
-
 def rr(cpu, val):
 	c = val & 1
 	res = (val >> 1) | (cpu.regs.f_c << 7)
 	cpu.flags(0, 0, 0, c)
 	return res
 
-def nodef():
+def add(cpu, val0, val1):
+	res = val0 + val1
+	z = res == 0
+	h = 1 if (val0 & 0xf) + (val1 & 0xf) > 0xf else 0
+	c = 1 if res > 0xff else 0
+	cpu.flags(z, 0, h, c)
+	return res
+
+def adc(cpu, val0, val1):
+	res = val0 + val1 + cpu.regs.f_c
+	z = res == 0
+	h = 1 if (val0 & 0xf) + (val1 & 0xf) + cpu.regs.f_c > 0xf else 0
+	c = 1 if res > 0xff else 0
+	cpu.flags(z, 0, h, c)
+	return res
+
+def sub(cpu, val0, val1):
+	res = val0 - val1
+	z = res == 0
+	h = 1 if (val0 & 0xf) - (val1 & 0xf) < 0 else 0
+	c = 1 if res < 0 else 0
+	cpu.flags(z, 1, h, c)
+	return res
+
+def sbc(cpu, val0, val1):
+	res = val0 - val1 - cpu.regs.f_c
+	z = res == 0
+	h = 1 if (val0 & 0xf) - (val1 & 0xf) - cpu.regs.f_c < 0 else 0
+	c = 1 if res < 0 else 0
+	cpu.flags(z, 1, h, c)
+	return res
+
+def and_op(cpu, val0, val1):
+	res = val0 & val1
+	z = res == 0
+	cpu.flags(z, 0, 1, 0)
+	return res
+
+def xor_op(cpu, val0, val1):
+	res = val0 ^ val1
+	z = res == 0
+	cpu.flags(z, 0, 0, 0)
+	return res
+
+def or_op(cpu, val0, val1):
+	res = val0 | val1
+	z = res == 0
+	cpu.flags(z, 0, 0, 0)
+	return res
+
+def cp_op(cpu, val0, val1):
+	return sub(cpu, val0, val1)
+
+def nodef(cpu):
   # illegal instruction
-  pass
+  cpu.regs.pc -= 1
 
 def nop(cpu):
 	# 0x00
@@ -61,7 +113,7 @@ def ld_bc_d16(cpu):
 
 def ld_bc_a(cpu):
 	# 0x02
-	cpu.bus_write(cpu.regs.bc, cpu.regs.a)
+	cpu.write(cpu.regs.bc, cpu.regs.a)
 	return 8
 
 def inc_bc(cpu):
@@ -93,7 +145,7 @@ def rlca(cpu):
 def ld_a16_sp(cpu):
 	# 0x08
 	op0 = cpu.fetch_word()
-	cpu.write_mem(op0, cpu.regs.sp)
+	cpu.write(op0, cpu.regs.sp)
 	return 20
 
 def add_hl_bc(cpu):
@@ -103,7 +155,7 @@ def add_hl_bc(cpu):
 
 def ld_a_bc(cpu):
 	# 0x0a
-	val = cpu.read_mem(cpu.regs.bc)
+	val = cpu.read(cpu.regs.bc)
 	cpu.regs.a = val
 	return 8
 
@@ -145,7 +197,7 @@ def ld_de_d16(cpu):
 
 def ld_de_a(cpu):
 	# 0x12
-	cpu.bus_write(cpu.regs.de, cpu.regs.a)
+	cpu.write(cpu.regs.de, cpu.regs.a)
 	return 8
 
 def inc_de(cpu):
@@ -176,8 +228,8 @@ def rla(cpu):
 
 def jr_r8(cpu):
 	# 0x18
-	op0 = cpu.fetch_byte()
-	cpu.regs.pc += signed(op0)
+	op0 = signed(cpu.fetch_byte())
+	cpu.regs.pc += op0
 	return 12
 
 def add_hl_de(cpu):
@@ -187,7 +239,7 @@ def add_hl_de(cpu):
 
 def ld_a_de(cpu):
 	# 0x1a
-	val = cpu.read_mem(cpu.regs.de)
+	val = cpu.read(cpu.regs.de)
 	cpu.regs.a = val
 	return 8
 
@@ -219,7 +271,7 @@ def rra(cpu):
 
 def jr_nz_r8(cpu):
 	# 0x20
-	op0 = cpu.fetch_byte()
+	op0 = signed(cpu.fetch_byte())
 	if not cpu.regs.f_z:
 		cpu.regs.pc += op0
 		return 12
@@ -234,7 +286,7 @@ def ld_hl_d16(cpu):
 
 def ld_hlp_a(cpu):
 	# 0x22
-	cpu.bus_write(cpu.regs.hl, cpu.regs.a)
+	cpu.write(cpu.regs.hl, cpu.regs.a)
 	cpu.regs.hl += 1
 	return 8
 
@@ -265,7 +317,7 @@ def daa(cpu):
 
 def jr_z_r8(cpu):
 	# 0x28
-	op0 = cpu.fetch_byte()
+	op0 = signed(cpu.fetch_byte())
 	if cpu.regs.f_z:
 		cpu.regs.pc += op0
 		return 12
@@ -279,7 +331,7 @@ def add_hl_hl(cpu):
 
 def ld_a_hlp(cpu):
 	# 0x2a
-	val = cpu.read_mem(cpu.regs.hl)
+	val = cpu.read(cpu.regs.hl)
 	cpu.regs.a = val
 	cpu.regs.hl += 1
 	return 8
@@ -313,7 +365,7 @@ def cpl(cpu):
 
 def jr_nc_r8(cpu):
 	# 0x30
-	op0 = cpu.fetch_byte()
+	op0 = signed(cpu.fetch_byte())
 	if not cpu.regs.f_c:
 		cpu.regs.pc += op0
 		return 12
@@ -328,7 +380,7 @@ def ld_sp_d16(cpu):
 
 def ld_hlm_a(cpu):
 	# 0x32
-	cpu.bus_write(cpu.regs.hl, cpu.regs.a)
+	cpu.write(cpu.regs.hl, cpu.regs.a)
 	cpu.regs.hl -= 1
 	return 8
 
@@ -339,22 +391,22 @@ def inc_sp(cpu):
 
 def inc_hlp(cpu):
 	# 0x34
-	val = cpu.bus_read(cpu.regs.hl)
+	val = cpu.read(cpu.regs.hl)
 	val = inc_byte(cpu, val)
-	cpu.bus_write(cpu.regs.hl, val)
+	cpu.write(cpu.regs.hl, val)
 	return 12
 
 def dec_hlp(cpu):
 	# 0x35
-	val = cpu.bus_read(cpu.regs.hl)
+	val = cpu.read(cpu.regs.hl)
 	val = dec_byte(cpu, val)
-	cpu.bus_write(cpu.regs.hl, val)
+	cpu.write(cpu.regs.hl, val)
 	return 12
 
 def ld_hl_d8(cpu):
 	# 0x36
 	op0 = cpu.fetch_byte()
-	cpu.bus_write(cpu.regs.hl, op0)
+	cpu.write(cpu.regs.hl, op0)
 	return 12
 
 def scf(cpu):
@@ -363,7 +415,7 @@ def scf(cpu):
 
 def jr_c_r8(cpu):
 	# 0x38
-	op0 = cpu.fetch_byte()
+	op0 = signed(cpu.fetch_byte())
 	if cpu.regs.f_c:
 		cpu.regs.pc += op0
 		return 12
@@ -377,7 +429,7 @@ def add_hl_sp(cpu):
 
 def ld_a_hlm(cpu):
 	# 0x3a
-	val = cpu.read_mem(cpu.regs.hl)
+	val = cpu.read(cpu.regs.hl)
 	cpu.regs.a = val
 	cpu.regs.hl -= 1
 	return 8
@@ -409,219 +461,273 @@ def ccf(cpu):
 
 def ld_b_b(cpu):
 	# 0x40
-	pass
+	cpu.regs.b = cpu.regs.b
+	return 4
 
 def ld_b_c(cpu):
 	# 0x41
-	pass
+	cpu.regs.b = cpu.regs.c
+	return 4
 
 def ld_b_d(cpu):
 	# 0x42
-	pass
+	cpu.regs.b = cpu.regs.d
+	return 4
 
 def ld_b_e(cpu):
 	# 0x43
-	pass
+	cpu.regs.b = cpu.regs.e
+	return 4
 
 def ld_b_h(cpu):
 	# 0x44
-	pass
+	cpu.regs.b = cpu.regs.h
+	return 4
 
 def ld_b_l(cpu):
 	# 0x45
-	pass
+	cpu.regs.b = cpu.regs.l
+	return 4
 
 def ld_b_hl(cpu):
 	# 0x46
-	pass
+	cpu.regs.b = cpu.read(cpu.regs.hl)
+	return 8
 
 def ld_b_a(cpu):
 	# 0x47
-	pass
+	cpu.regs.b = cpu.regs.a
+	return 4
 
 def ld_c_b(cpu):
 	# 0x48
-	pass
+	cpu.regs.c = cpu.regs.b
+	return 4
 
 def ld_c_c(cpu):
 	# 0x49
-	pass
+	cpu.regs.c = cpu.regs.c
+	return 4
 
 def ld_c_d(cpu):
 	# 0x4a
-	pass
+	cpu.regs.c = cpu.regs.d
+	return 4
 
 def ld_c_e(cpu):
 	# 0x4b
-	pass
+	cpu.regs.c = cpu.regs.e
+	return 4
 
 def ld_c_h(cpu):
 	# 0x4c
-	pass
+	cpu.regs.c = cpu.regs.h
+	return 4
 
 def ld_c_l(cpu):
 	# 0x4d
-	pass
+	cpu.regs.c = cpu.regs.l
+	return 4
 
 def ld_c_hl(cpu):
 	# 0x4e
-	pass
+	cpu.regs.c = cpu.read(cpu.regs.hl)
+	return 8
 
 def ld_c_a(cpu):
 	# 0x4f
-	pass
+	cpu.regs.c = cpu.regs.a
+	return 4
 
 def ld_d_b(cpu):
 	# 0x50
-	pass
+	cpu.regs.d = cpu.regs.b
+	return 4
 
 def ld_d_c(cpu):
 	# 0x51
-	pass
+	cpu.regs.d = cpu.regs.c
+	return 4
 
 def ld_d_d(cpu):
 	# 0x52
-	pass
+	cpu.regs.d = cpu.regs.d
+	return 4
 
 def ld_d_e(cpu):
 	# 0x53
-	pass
+	cpu.regs.d = cpu.regs.e
+	return 4
 
 def ld_d_h(cpu):
 	# 0x54
-	pass
+	cpu.regs.d = cpu.regs.h
+	return 4
 
 def ld_d_l(cpu):
 	# 0x55
-	pass
+	cpu.regs.d = cpu.regs.l
+	return 4
 
 def ld_d_hl(cpu):
 	# 0x56
-	pass
+	cpu.regs.d = cpu.read(cpu.regs.hl)
+	return 8
 
 def ld_d_a(cpu):
 	# 0x57
-	pass
+	cpu.regs.d = cpu.regs.a
+	return 4
 
 def ld_e_b(cpu):
 	# 0x58
-	pass
+	cpu.regs.e = cpu.regs.b
+	return 4
 
 def ld_e_c(cpu):
 	# 0x59
-	pass
+	cpu.regs.e = cpu.regs.c
+	return 4
 
 def ld_e_d(cpu):
 	# 0x5a
-	pass
+	cpu.regs.e = cpu.regs.d
+	return 4
 
 def ld_e_e(cpu):
 	# 0x5b
-	pass
+	cpu.regs.e = cpu.regs.e
+	return 4
 
 def ld_e_h(cpu):
 	# 0x5c
-	pass
+	cpu.regs.e = cpu.regs.h
+	return 4
 
 def ld_e_l(cpu):
 	# 0x5d
-	pass
+	cpu.regs.e = cpu.regs.l
+	return 4
 
 def ld_e_hl(cpu):
 	# 0x5e
-	pass
+	cpu.regs.e = cpu.read(cpu.regs.hl)
+	return 8
 
 def ld_e_a(cpu):
 	# 0x5f
-	pass
+	cpu.regs.e = cpu.regs.a
+	return 4
 
 def ld_h_b(cpu):
 	# 0x60
-	pass
+	cpu.regs.h = cpu.regs.b
+	return 4
 
 def ld_h_c(cpu):
 	# 0x61
-	pass
+	cpu.regs.h = cpu.regs.c
+	return 4
 
 def ld_h_d(cpu):
 	# 0x62
-	pass
+	cpu.regs.h = cpu.regs.d
+	return 4
 
 def ld_h_e(cpu):
 	# 0x63
-	pass
+	cpu.regs.h = cpu.regs.e
+	return 4
 
 def ld_h_h(cpu):
 	# 0x64
-	pass
+	cpu.regs.h = cpu.regs.h
+	return 4
 
 def ld_h_l(cpu):
 	# 0x65
-	pass
+	cpu.regs.h = cpu.regs.l
+	return 4
 
 def ld_h_hl(cpu):
 	# 0x66
-	pass
+	cpu.regs.h = cpu.read(cpu.regs.hl)
+	return 8
 
 def ld_h_a(cpu):
 	# 0x67
-	pass
+	cpu.regs.h = cpu.regs.a
+	return 4
 
 def ld_l_b(cpu):
 	# 0x68
-	pass
+	cpu.regs.l = cpu.regs.b
+	return 4
 
 def ld_l_c(cpu):
 	# 0x69
-	pass
+	cpu.regs.l = cpu.regs.c
+	return 4
 
 def ld_l_d(cpu):
 	# 0x6a
-	pass
+	cpu.regs.l = cpu.regs.d
+	return 4
 
 def ld_l_e(cpu):
 	# 0x6b
-	pass
+	cpu.regs.l = cpu.regs.e
+	return 4
 
 def ld_l_h(cpu):
 	# 0x6c
-	pass
+	cpu.regs.l = cpu.regs.h
+	return 4
 
 def ld_l_l(cpu):
 	# 0x6d
-	pass
+	cpu.regs.l = cpu.regs.l
+	return 4
 
 def ld_l_hl(cpu):
 	# 0x6e
-	pass
+	cpu.regs.l = cpu.read(cpu.regs.hl)
+	return 8
 
 def ld_l_a(cpu):
 	# 0x6f
-	pass
+	cpu.regs.l = cpu.regs.a
+	return 4
 
 def ld_hl_b(cpu):
 	# 0x70
-	pass
+	cpu.write(cpu.regs.hl, cpu.regs.b)
+	return 8
 
 def ld_hl_c(cpu):
 	# 0x71
-	pass
+	cpu.write(cpu.regs.hl, cpu.regs.c)
+	return 8
 
 def ld_hl_d(cpu):
 	# 0x72
-	pass
+	cpu.write(cpu.regs.hl, cpu.regs.d)
+	return 8
 
 def ld_hl_e(cpu):
 	# 0x73
-	pass
+	cpu.write(cpu.regs.hl, cpu.regs.e)
+	return 8
 
 def ld_hl_h(cpu):
 	# 0x74
-	pass
+	cpu.write(cpu.regs.hl, cpu.regs.h)
+	return 8
 
 def ld_hl_l(cpu):
 	# 0x75
-	pass
+	cpu.write(cpu.regs.hl, cpu.regs.l)
+	return 8
 
 def halt(cpu):
 	# 0x76
@@ -629,339 +735,465 @@ def halt(cpu):
 
 def ld_hl_a(cpu):
 	# 0x77
-	pass
+	cpu.write(cpu.regs.hl, cpu.regs.a)
+	return 8
 
 def ld_a_b(cpu):
 	# 0x78
-	pass
+	cpu.regs.a = cpu.regs.b
+	return 4
 
 def ld_a_c(cpu):
 	# 0x79
-	pass
+	cpu.regs.a = cpu.regs.c
+	return 4
 
 def ld_a_d(cpu):
 	# 0x7a
-	pass
+	cpu.regs.a = cpu.regs.d
+	return 4
 
 def ld_a_e(cpu):
 	# 0x7b
-	pass
+	cpu.regs.a = cpu.regs.e
+	return 4
 
 def ld_a_h(cpu):
 	# 0x7c
-	pass
+	cpu.regs.a = cpu.regs.h
+	return 4
 
 def ld_a_l(cpu):
 	# 0x7d
-	pass
+	cpu.regs.a = cpu.regs.l
+	return 4
 
 def ld_a_hl(cpu):
 	# 0x7e
-	pass
+	cpu.regs.a = cpu.read(cpu.regs.hl)
+	return 8
 
 def ld_a_a(cpu):
 	# 0x7f
-	pass
+	cpu.regs.a = cpu.regs.a
+	return 4
 
 def add_a_b(cpu):
 	# 0x80
-	pass
+	cpu.regs.a = add(cpu, cpu.regs.a, cpu.regs.b)
+	return 4
 
 def add_a_c(cpu):
 	# 0x81
-	pass
+	cpu.regs.a = add(cpu, cpu.regs.a, cpu.regs.c)
+	return 4
 
 def add_a_d(cpu):
 	# 0x82
-	pass
+	cpu.regs.a = add(cpu, cpu.regs.a, cpu.regs.d)
+	return 4
 
 def add_a_e(cpu):
 	# 0x83
-	pass
+	cpu.regs.a = add(cpu, cpu.regs.a, cpu.regs.e)
+	return 4
 
 def add_a_h(cpu):
 	# 0x84
-	pass
+	cpu.regs.a = add(cpu, cpu.regs.a, cpu.regs.h)
+	return 4
 
 def add_a_l(cpu):
 	# 0x85
-	pass
+	cpu.regs.a = add(cpu, cpu.regs.a, cpu.regs.l)
+	return 4
 
 def add_a_hl(cpu):
 	# 0x86
-	pass
+	val = cpu.read(cpu.regs.hl)
+	cpu.regs.a = add(cpu, cpu.regs.a, val)
+	return 8
 
 def add_a_a(cpu):
 	# 0x87
-	pass
+	cpu.regs.a = add(cpu, cpu.regs.a, cpu.regs.a)
+	return 4
 
 def adc_a_b(cpu):
 	# 0x88
-	pass
+	cpu.regs.a = adc(cpu, cpu.regs.a, cpu.regs.b)
+	return 4
 
 def adc_a_c(cpu):
 	# 0x89
-	pass
+	cpu.regs.a = adc(cpu, cpu.regs.a, cpu.regs.c)
+	return 4
 
 def adc_a_d(cpu):
 	# 0x8a
-	pass
+	cpu.regs.a = adc(cpu, cpu.regs.a, cpu.regs.d)
+	return 4
 
 def adc_a_e(cpu):
 	# 0x8b
-	pass
+	cpu.regs.a = adc(cpu, cpu.regs.a, cpu.regs.e)
+	return 4
 
 def adc_a_h(cpu):
 	# 0x8c
-	pass
+	cpu.regs.a = adc(cpu, cpu.regs.a, cpu.regs.h)
+	return 4
 
 def adc_a_l(cpu):
 	# 0x8d
-	pass
+	cpu.regs.a = adc(cpu, cpu.regs.a, cpu.regs.l)
+	return 4
 
 def adc_a_hl(cpu):
 	# 0x8e
-	pass
+	val = cpu.read(cpu.regs.hl)
+	cpu.regs.a = adc(cpu, cpu.regs.a, val)
+	return 8
 
 def adc_a_a(cpu):
 	# 0x8f
-	pass
+	cpu.regs.a = adc(cpu, cpu.regs.a, cpu.regs.a)
+	return 4
 
 def sub_b(cpu):
 	# 0x90
-	pass
+	cpu.regs.a = sub(cpu, cpu.regs.a, cpu.regs.b)
+	return 4
 
 def sub_c(cpu):
 	# 0x91
-	pass
+	cpu.regs.a = sub(cpu, cpu.regs.a, cpu.regs.c)
+	return 4
 
 def sub_d(cpu):
 	# 0x92
-	pass
+	cpu.regs.a = sub(cpu, cpu.regs.a, cpu.regs.d)
+	return 4
 
 def sub_e(cpu):
 	# 0x93
-	pass
+	cpu.regs.a = sub(cpu, cpu.regs.a, cpu.regs.e)
+	return 4
 
 def sub_h(cpu):
 	# 0x94
-	pass
+	cpu.regs.a = sub(cpu, cpu.regs.a, cpu.regs.h)
+	return 4
 
 def sub_l(cpu):
 	# 0x95
-	pass
+	cpu.regs.a = sub(cpu, cpu.regs.a, cpu.regs.l)
+	return 4
 
 def sub_hl(cpu):
 	# 0x96
-	pass
+	val = cpu.read(cpu.regs.hl)
+	cpu.regs.a = sub(cpu, cpu.regs.a, val)
+	return 8
 
 def sub_a(cpu):
 	# 0x97
-	pass
+	cpu.regs.a = sub(cpu, cpu.regs.a, cpu.regs.a)
+	return 4
 
 def sbc_a_b(cpu):
 	# 0x98
-	pass
+	cpu.regs.a = sbc(cpu, cpu.regs.a, cpu.regs.b)
+	return 4
 
 def sbc_a_c(cpu):
 	# 0x99
-	pass
+	cpu.regs.a = sbc(cpu, cpu.regs.a, cpu.regs.c)
+	return 4
 
 def sbc_a_d(cpu):
 	# 0x9a
-	pass
+	cpu.regs.a = sbc(cpu, cpu.regs.a, cpu.regs.d)
+	return 4
 
 def sbc_a_e(cpu):
 	# 0x9b
-	pass
+	cpu.regs.a = sbc(cpu, cpu.regs.a, cpu.regs.e)
+	return 4
 
 def sbc_a_h(cpu):
 	# 0x9c
-	pass
+	cpu.regs.a = sbc(cpu, cpu.regs.a, cpu.regs.h)
+	return 4
 
 def sbc_a_l(cpu):
 	# 0x9d
-	pass
+	cpu.regs.a = sbc(cpu, cpu.regs.a, cpu.regs.l)
+	return 4
 
 def sbc_a_hl(cpu):
 	# 0x9e
-	pass
+	val = cpu.read(cpu.regs.hl)
+	cpu.regs.a = sbc(cpu, cpu.regs.a, val)
+	return 8
 
 def sbc_a_a(cpu):
 	# 0x9f
-	pass
+	cpu.regs.a = sbc(cpu, cpu.regs.a, cpu.regs.a)
+	return 4
 
 def and_b(cpu):
 	# 0xa0
-	pass
+	cpu.regs.a = and_op(cpu, cpu.regs.a, cpu.regs.b)
+	return 4
 
 def and_c(cpu):
 	# 0xa1
-	pass
+	cpu.regs.a = and_op(cpu, cpu.regs.a, cpu.regs.c)
+	return 4
 
 def and_d(cpu):
 	# 0xa2
-	pass
+	cpu.regs.a = and_op(cpu, cpu.regs.a, cpu.regs.d)
+	return 4
 
 def and_e(cpu):
 	# 0xa3
-	pass
+	cpu.regs.a = and_op(cpu, cpu.regs.a, cpu.regs.e)
+	return 4
 
 def and_h(cpu):
 	# 0xa4
-	pass
+	cpu.regs.a = and_op(cpu, cpu.regs.a, cpu.regs.h)
+	return 4
 
 def and_l(cpu):
 	# 0xa5
-	pass
+	cpu.regs.a = and_op(cpu, cpu.regs.a, cpu.regs.l)
+	return 4
 
 def and_hl(cpu):
 	# 0xa6
-	pass
+	val = cpu.read(cpu.regs.hl)
+	cpu.regs.a = and_op(cpu, cpu.regs.a, val)
+	return 8
 
 def and_a(cpu):
 	# 0xa7
-	pass
+	cpu.regs.a = and_op(cpu, cpu.regs.a, cpu.regs.a)
+	return 4
 
 def xor_b(cpu):
 	# 0xa8
-	pass
+	cpu.regs.a = xor_op(cpu, cpu.regs.a, cpu.regs.b)
+	return 4
 
 def xor_c(cpu):
 	# 0xa9
-	pass
+	cpu.regs.a = xor_op(cpu, cpu.regs.a, cpu.regs.c)
+	return 4
 
 def xor_d(cpu):
 	# 0xaa
-	pass
+	cpu.regs.a = xor_op(cpu, cpu.regs.a, cpu.regs.d)
+	return 4
 
 def xor_e(cpu):
 	# 0xab
-	pass
+	cpu.regs.a = xor_op(cpu, cpu.regs.a, cpu.regs.e)
+	return 4
 
 def xor_h(cpu):
 	# 0xac
-	pass
+	cpu.regs.a = xor_op(cpu, cpu.regs.a, cpu.regs.h)
+	return 4
 
 def xor_l(cpu):
 	# 0xad
-	pass
+	cpu.regs.a = xor_op(cpu, cpu.regs.a, cpu.regs.l)
+	return 4
 
 def xor_hl(cpu):
 	# 0xae
-	pass
+	val = cpu.read(cpu.regs.hl)
+	cpu.regs.a = xor_op(cpu, cpu.regs.a, val)
+	return 8
 
 def xor_a(cpu):
 	# 0xaf
-	pass
+	cpu.regs.a = xor_op(cpu, cpu.regs.a, cpu.regs.a)
+	return 4
 
 def or_b(cpu):
 	# 0xb0
-	pass
+	cpu.regs.a = or_op(cpu, cpu.regs.a, cpu.regs.b)
+	return 4
 
 def or_c(cpu):
 	# 0xb1
-	pass
+	cpu.regs.a = or_op(cpu, cpu.regs.a, cpu.regs.c)
+	return 4
 
 def or_d(cpu):
 	# 0xb2
-	pass
+	cpu.regs.a = or_op(cpu, cpu.regs.a, cpu.regs.d)
+	return 4
 
 def or_e(cpu):
 	# 0xb3
-	pass
+	cpu.regs.a = or_op(cpu, cpu.regs.a, cpu.regs.e)
+	return 4
 
 def or_h(cpu):
 	# 0xb4
-	pass
+	cpu.regs.a = or_op(cpu, cpu.regs.a, cpu.regs.h)
+	return 4
 
 def or_l(cpu):
 	# 0xb5
-	pass
+	cpu.regs.a = or_op(cpu, cpu.regs.a, cpu.regs.l)
+	return 4
 
 def or_hl(cpu):
 	# 0xb6
-	pass
+	val = cpu.read(cpu.regs.hl)
+	cpu.regs.a = or_op(cpu, cpu.regs.a, val)
+	return 8
 
 def or_a(cpu):
 	# 0xb7
-	pass
+	cpu.regs.a = or_op(cpu, cpu.regs.a, cpu.regs.a)
+	return 4
 
 def cp_b(cpu):
 	# 0xb8
-	pass
+	cp_op(cpu, cpu.regs.a, cpu.regs.b)
+	return 4
 
 def cp_c(cpu):
 	# 0xb9
-	pass
+	cp_op(cpu, cpu.regs.a, cpu.regs.c)
+	return 4
 
 def cp_d(cpu):
 	# 0xba
-	pass
+	cp_op(cpu, cpu.regs.a, cpu.regs.d)
+	return 4
 
 def cp_e(cpu):
 	# 0xbb
-	pass
+	cp_op(cpu, cpu.regs.a, cpu.regs.e)
+	return 4
 
 def cp_h(cpu):
 	# 0xbc
-	pass
+	cp_op(cpu, cpu.regs.a, cpu.regs.h)
+	return 4
 
 def cp_l(cpu):
 	# 0xbd
-	pass
+	cp_op(cpu, cpu.regs.a, cpu.regs.lb)
+	return 4
 
 def cp_hl(cpu):
 	# 0xbe
-	pass
+	val = cpu.read(cpu.regs.hl)
+	cp_op(cpu, cpu.regs.a, val)
+	return 8
 
 def cp_a(cpu):
 	# 0xbf
-	pass
+	cp_op(cpu, cpu.regs.a, cpu.regs.a)
+	return 4
 
 def ret_nz(cpu):
 	# 0xc0
-	pass
+	if not cpu.regs.f_z:
+		val = cpu.read(cpu.regs.sp)
+		cpu.regs.pc = val
+		cpu.regs.sp += 2
+		return 20
+	else:
+		return 8
 
 def pop_bc(cpu):
 	# 0xc1
-	pass
+	val = cpu.read_word(cpu.regs.sp)
+	cpu.regs.bc = val
+	cpu.regs.sp += 2
+	return 12
 
 def jp_nz_a16(cpu):
 	# 0xc2
-	pass
+	op0 = cpu.fetch_word()
+	if not cpu.regs.f_z:
+		cpu.regs.pc = op0
+		return 16
+	else:
+		return 12
+
 
 def jp_a16(cpu):
 	# 0xc3
-	pass
+	op0 = cpu.fetch_word()
+	cpu.regs.pc = op0
+	return 16
 
 def call_nz_a16(cpu):
 	# 0xc4
-	pass
+	op0 = cpu.fetch_word()
+	if not cpu.regs.f_z:
+		cpu.regs.sp -= 2
+		cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+		cpu.regs.pc = op0
+		return 24
+	else:
+		return 12
 
 def push_bc(cpu):
 	# 0xc5
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.bc)
+	return 16
 
 def add_a_d8(cpu):
 	# 0xc6
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.a = add(cpu, cpu.regs.a, op0)
+	return 8
 
 def rst_00h(cpu):
 	# 0xc7
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+	cpu.regs.pc = 0x00
+	return 16
 
 def ret_z(cpu):
 	# 0xc8
-	pass
+	if cpu.regs.f_z:
+		val = cpu.read(cpu.regs.sp)
+		cpu.regs.pc = val
+		cpu.regs.sp += 2
+		return 20
+	else:
+		return 8
 
 def ret(cpu):
 	# 0xc9
-	pass
+	val = cpu.read(cpu.regs.sp)
+	cpu.regs.pc = val
+	cpu.regs.sp += 2
+	return 16
 
 def jp_z_a16(cpu):
 	# 0xca
-	pass
+	op0 = cpu.fetch_word()
+	if cpu.regs.f_z:
+		cpu.regs.pc = op0
+		return 16
+	else:
+		return 12
 
 def prefix_cb(cpu):
 	# 0xcb
@@ -969,55 +1201,106 @@ def prefix_cb(cpu):
 
 def call_z_a16(cpu):
 	# 0xcc
-	pass
+	op0 = cpu.fetch_word()
+	if cpu.regs.f_z:
+		cpu.regs.sp -= 2
+		cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+		cpu.regs.pc = op0
+		return 24
+	else:
+		return 12
 
 def call_a16(cpu):
 	# 0xcd
-	pass
+	op0 = cpu.fetch_word()
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+	cpu.regs.pc = op0
+	return 24
 
 def adc_a_d8(cpu):
 	# 0xce
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.a = adc(cpu, cpu.regs.a, op0)
+	return 8
 
 def rst_08h(cpu):
 	# 0xcf
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+	cpu.regs.pc = 0x08
+	return 16
 
 def ret_nc(cpu):
 	# 0xd0
-	pass
+	if not cpu.regs.f_c:
+		val = cpu.read(cpu.regs.sp)
+		cpu.regs.pc = val
+		cpu.regs.sp += 2
+		return 20
+	else:
+		return 8
 
 def pop_de(cpu):
 	# 0xd1
-	pass
+	val = cpu.read_word(cpu.regs.sp)
+	cpu.regs.de = val
+	cpu.regs.sp += 2
+	return 12
 
 def jp_nc_a16(cpu):
 	# 0xd2
-	pass
+	op0 = cpu.fetch_word()
+	if not cpu.regs.f_c:
+		cpu.regs.pc = op0
+		return 16
+	else:
+		return 12
 
 def op_0xd3(cpu):
 	# 0xd3
-	pass
+	nodef(cpu)
+	return 0
 
 def call_nc_a16(cpu):
 	# 0xd4
-	pass
+	op0 = cpu.fetch_word()
+	if not cpu.regs.f_c:
+		cpu.regs.sp -= 2
+		cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+		cpu.regs.pc = op0
+		return 24
+	else:
+		return 12
 
 def push_de(cpu):
 	# 0xd5
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.de)
+	return 16
 
 def sub_d8(cpu):
 	# 0xd6
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.a = sub(cpu, cpu.regs.a, op0)
+	return 8
 
 def rst_10h(cpu):
 	# 0xd7
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+	cpu.regs.pc = 0x10
+	return 16
 
 def ret_c(cpu):
 	# 0xd8
-	pass
+	if cpu.regs.f_c:
+		val = cpu.read(cpu.regs.sp)
+		cpu.regs.pc = val
+		cpu.regs.sp += 2
+		return 20
+	else:
+		return 8
 
 def reti(cpu):
 	# 0xd9
@@ -1025,27 +1308,46 @@ def reti(cpu):
 
 def jp_c_a16(cpu):
 	# 0xda
-	pass
+	op0 = cpu.fetch_word()
+	if cpu.regs.f_c:
+		cpu.regs.pc = op0
+		return 16
+	else:
+		return 12
 
 def op_0xdb(cpu):
 	# 0xdb
-	pass
+	nodef(cpu)
+	return 0
 
 def call_c_a16(cpu):
 	# 0xdc
-	pass
+	op0 = cpu.fetch_word()
+	if cpu.regs.f_c:
+		cpu.regs.sp -= 2
+		cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+		cpu.regs.pc = op0
+		return 24
+	else:
+		return 12
 
 def op_0xdd(cpu):
 	# 0xdd
-	pass
+	nodef(cpu)
+	return 0
 
 def sbc_a_d8(cpu):
 	# 0xde
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.a = sbc(cpu, cpu.regs.a, op0)
+	return 8
 
 def rst_18h(cpu):
 	# 0xdf
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+	cpu.regs.pc = 0x18
+	return 16
 
 def ldh_a8_a(cpu):
 	# 0xe0
@@ -1053,63 +1355,90 @@ def ldh_a8_a(cpu):
 
 def pop_hl(cpu):
 	# 0xe1
-	pass
+	val = cpu.read_word(cpu.regs.sp)
+	cpu.regs.hl = val
+	cpu.regs.sp += 2
+	return 12
 
 def ld_c_a(cpu):
 	# 0xe2
-	pass
+	cpu.write(cpu.regs.c, cpu.regs.a)
+	cpu.regs.pc += 1
+	return 8
 
 def op_0xe3(cpu):
 	# 0xe3
-	pass
+	nodef(cpu)
+	return 0
 
 def op_0xe4(cpu):
 	# 0xe4
-	pass
+	nodef(cpu)
+	return 0
 
 def push_hl(cpu):
 	# 0xe5
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.hl)
+	return 16
 
 def and_d8(cpu):
 	# 0xe6
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.a = and_op(cpu, cpu.regs.a, op0)
+	return 8
 
 def rst_20h(cpu):
 	# 0xe7
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+	cpu.regs.pc = 0x20
+	return 16
 
 def add_sp_r8(cpu):
 	# 0xe8
-	pass
+	val = signed(signed(cpu.fetch_byte()))
+	cpu.regs.sp = add_word(cpu.regs.sp, val)
+	return 16
 
 def jp_hl(cpu):
 	# 0xe9
-	pass
+	cpu.regs.pc = cpu.regs.hl
+	return 4
 
 def ld_a16_a(cpu):
 	# 0xea
-	pass
+	op0 = cpu.fetch_word()
+	cpu.write(op0, cpu.regs.a)
+	return 16
 
 def op_0xeb(cpu):
 	# 0xeb
-	pass
+	nodef(cpu)
+	return 0
 
 def op_0xec(cpu):
 	# 0xec
-	pass
+	nodef(cpu)
+	return 0
 
 def op_0xed(cpu):
 	# 0xed
-	pass
+	nodef(cpu)
+	return 0
 
 def xor_d8(cpu):
 	# 0xee
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.a = xor_op(cpu, cpu.regs.a, op0)
+	return 8
 
 def rst_28h(cpu):
 	# 0xef
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+	cpu.regs.pc = 0x28
+	return 16
 
 def ldh_a_a8(cpu):
 	# 0xf0
@@ -1117,11 +1446,17 @@ def ldh_a_a8(cpu):
 
 def pop_af(cpu):
 	# 0xf1
-	pass
+	val = cpu.read_word(cpu.regs.sp)
+	cpu.regs.af = val
+	cpu.regs.sp += 2
+	return 12
 
 def ld_a_c(cpu):
 	# 0xf2
-	pass
+	val = cpu.read(cpu.regs.c)
+	cpu.regs.a = val
+	cpu.regs.pc += 1
+	return 8
 
 def di(cpu):
 	# 0xf3
@@ -1129,31 +1464,45 @@ def di(cpu):
 
 def op_0xf4(cpu):
 	# 0xf4
-	pass
+	nodef(cpu)
+	return 0
 
 def push_af(cpu):
 	# 0xf5
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.af)
+	return 16
 
 def or_d8(cpu):
 	# 0xf6
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.a = or_op(cpu, cpu.regs.a, op0)
+	return 8
 
 def rst_30h(cpu):
 	# 0xf7
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+	cpu.regs.pc = 0x30
+	return 16
 
 def ld_hl_spr8(cpu):
 	# 0xf8
-	pass
+	val = signed(cpu.fetch_byte())
+	cpu.regs.hl = add_word(cpu.regs.sp, val)
+	return 12
+
 
 def ld_sp_hl(cpu):
 	# 0xf9
-	pass
+	cpu.regs.sp = cpu.regs.hl
+	return 8
 
 def ld_a_a16(cpu):
 	# 0xfa
-	pass
+	op0 = cpu.fetch_word()
+	cpu.write(cpu.regs.a, op0)
+	return 16
 
 def ei(cpu):
 	# 0xfb
@@ -1161,19 +1510,26 @@ def ei(cpu):
 
 def op_0xfc(cpu):
 	# 0xfc
-	pass
+	nodef(cpu)
+	return 0
 
 def op_0xfd(cpu):
 	# 0xfd
-	pass
+	nodef(cpu)
+	return 0
 
 def cp_d8(cpu):
 	# 0xfe
-	pass
+	op0 = cpu.fetch_byte()
+	cp_op(cpu, cpu.regs.a, op0)
+	return 8
 
 def rst_38h(cpu):
 	# 0xff
-	pass
+	cpu.regs.sp -= 2
+	cpu.write_word(cpu.regs.sp, cpu.regs.pc)
+	cpu.regs.pc = 0x38
+	return 16
 
 instructions = [
 	# 0x0_

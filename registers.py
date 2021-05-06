@@ -81,6 +81,15 @@ class Registers:
     self._l = nn & 0xff
 
   @property
+  def af(self):
+    return (self._a << 8) | self._f
+
+  @af.setter
+  def af(self, nn):
+    self._a = nn >> 8
+    self._f = nn & 0xff
+
+  @property
   def bc(self):
     return (self._b << 8) | self._c
 
