@@ -1,3 +1,50 @@
+def signed(byte):
+	return int.from_bytes(byte, byteorder='little', signed=True)
+
+def inc_byte(cpu, val):
+	z = 1 if val + 1 == 0 else 0
+	h = 1 if val & 0xf == 0xf else 0
+	cpu.flags(z, 0, h, None)
+	return val + 1
+
+def dec_byte(cpu, val):
+	z = 1 if val + 1 == 0 else 0
+	h = 0 if val & 0xf else 1
+	cpu.flags(z, 1, h, None)
+	return val + 1
+
+def add_word(cpu, val0, val1):
+	res = val0 + val1
+	h = 1 if (val0 & 0xfff) + (val1 & 0xfff) > 0xfff else 0
+	c = 1 if res > 0xffff else 0
+	cpu.flags(None, 0, h, c)
+	return res
+
+def rlc(cpu, val):
+	c = 1 if val & 0x80 else 0
+	res = (val << 1) | c
+	cpu.flags(0, 0, 0, c)
+	return res
+
+def rl(cpu, val):
+	c = 1 if val & 0x80 else 0
+	res = (val << 1) | (cpu.regs.f_c)
+	cpu.flags(0, 0, 0, c)
+	return res
+
+def rrc(cpu, val):
+	c = val & 1
+	res = (val >> 1) | (c << 7)
+	cpu.flags(0, 0, 0, c)
+	return res
+
+
+def rr(cpu, val):
+	c = val & 1
+	res = (val >> 1) | (cpu.regs.f_c << 7)
+	cpu.flags(0, 0, 0, c)
+	return res
+
 def nodef():
   # illegal instruction
   pass
@@ -8,63 +55,83 @@ def nop(cpu):
 
 def ld_bc_d16(cpu):
 	# 0x01
-	pass
+	op0 = cpu.fetch_word()
+	cpu.regs.bc = op0
+	return 12
 
 def ld_bc_a(cpu):
 	# 0x02
-	pass
+	cpu.bus_write(cpu.regs.bc, cpu.regs.a)
+	return 8
 
 def inc_bc(cpu):
 	# 0x03
-	pass
+	cpu.regs.bc += 1
+	return 8
 
 def inc_b(cpu):
 	# 0x04
-	pass
+	cpu.regs.b = inc_byte(cpu, cpu.regs.b)
+	return 4
 
 def dec_b(cpu):
 	# 0x05
-	pass
+	cpu.regs.b = dec_byte(cpu, cpu.regs.b)
+	return 4
 
 def ld_b_d8(cpu):
 	# 0x06
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.b = op0
+	return 8
 
 def rlca(cpu):
 	# 0x07
-	pass
+	cpu.regs.a = rlc(cpu, cpu.regs.a)
+	return 4
 
 def ld_a16_sp(cpu):
 	# 0x08
-	pass
+	op0 = cpu.fetch_word()
+	cpu.write_mem(op0, cpu.regs.sp)
+	return 20
 
 def add_hl_bc(cpu):
 	# 0x09
-	pass
+	cpu.regs.hl = add_word(cpu, cpu.regs.hl, cpu.regs.bc)
+	return 8
 
 def ld_a_bc(cpu):
 	# 0x0a
-	pass
+	val = cpu.read_mem(cpu.regs.bc)
+	cpu.regs.a = val
+	return 8
 
 def dec_bc(cpu):
 	# 0x0b
-	pass
+	cpu.regs.bc -= 1
+	return 8
 
 def inc_c(cpu):
 	# 0x0c
-	pass
+	cpu.regs.c = inc_byte(cpu, cpu.regs.c)
+	return 4
 
 def dec_c(cpu):
 	# 0x0d
-	pass
+	cpu.regs.c = dec_byte(cpu, cpu.regs.c)
+	return 4
 
 def ld_c_d8(cpu):
 	# 0x0e
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.c = op0
+	return 8
 
 def rrca(cpu):
 	# 0x0f
-	pass
+	cpu.regs.a = rrc(cpu, cpu.regs.a)
+	return 4
 
 def stop_0(cpu):
 	# 0x10
@@ -72,91 +139,125 @@ def stop_0(cpu):
 
 def ld_de_d16(cpu):
 	# 0x11
-	pass
+	op0 = cpu.fetch_word()
+	cpu.regs.de = op0
+	return 12
 
 def ld_de_a(cpu):
 	# 0x12
-	pass
+	cpu.bus_write(cpu.regs.de, cpu.regs.a)
+	return 8
 
 def inc_de(cpu):
 	# 0x13
-	pass
+	cpu.regs.de += 1
+	return 8
 
 def inc_d(cpu):
 	# 0x14
-	pass
+	cpu.regs.d = inc_byte(cpu, cpu.regs.d)
+	return 4
 
 def dec_d(cpu):
 	# 0x15
-	pass
+	cpu.regs.d = dec_byte(cpu, cpu.regs.d)
+	return 4
 
 def ld_d_d8(cpu):
 	# 0x16
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.d = op0
+	return 8
 
 def rla(cpu):
 	# 0x17
-	pass
+	cpu.regs.a = rl(cpu, cpu.regs.a)
+	return 4
 
 def jr_r8(cpu):
 	# 0x18
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.pc += signed(op0)
+	return 12
 
 def add_hl_de(cpu):
 	# 0x19
-	pass
+	cpu.regs.hl = add_word(cpu, cpu.regs.hl, cpu.regs.de)
+	return 8
 
 def ld_a_de(cpu):
 	# 0x1a
-	pass
+	val = cpu.read_mem(cpu.regs.de)
+	cpu.regs.a = val
+	return 8
 
 def dec_de(cpu):
 	# 0x1b
-	pass
+	cpu.regs.de -= 1
+	return 8
 
 def inc_e(cpu):
 	# 0x1c
-	pass
+	cpu.regs.e = inc_byte(cpu, cpu.regs.e)
+	return 4
 
 def dec_e(cpu):
 	# 0x1d
-	pass
+	cpu.regs.e = dec_byte(cpu, cpu.regs.e)
+	return 4
 
 def ld_e_d8(cpu):
 	# 0x1e
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.e = op0
+	return 8
 
 def rra(cpu):
 	# 0x1f
-	pass
+	cpu.regs.a = rr(cpu, cpu.regs.a)
+	return 4
 
 def jr_nz_r8(cpu):
 	# 0x20
-	pass
+	op0 = cpu.fetch_byte()
+	if not cpu.regs.f_z:
+		cpu.regs.pc += op0
+		return 12
+	else:
+		return 8
 
 def ld_hl_d16(cpu):
 	# 0x21
-	pass
+	op0 = cpu.fetch_word()
+	cpu.regs.hl = op0
+	return 12
 
 def ld_hlp_a(cpu):
 	# 0x22
-	pass
+	cpu.bus_write(cpu.regs.hl, cpu.regs.a)
+	cpu.regs.hl += 1
+	return 8
 
 def inc_hl(cpu):
 	# 0x23
-	pass
+	cpu.regs.hl += 1
+	return 8
 
 def inc_h(cpu):
 	# 0x24
-	pass
+	cpu.regs.h = inc_byte(cpu, cpu.regs.h)
+	return 4
 
 def dec_h(cpu):
 	# 0x25
-	pass
+	cpu.regs.h = dec_byte(cpu, cpu.regs.h)
+	return 4
 
 def ld_h_d8(cpu):
 	# 0x26
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.h = op0
+	return 8
 
 def daa(cpu):
 	# 0x27
@@ -164,63 +265,97 @@ def daa(cpu):
 
 def jr_z_r8(cpu):
 	# 0x28
-	pass
+	op0 = cpu.fetch_byte()
+	if cpu.regs.f_z:
+		cpu.regs.pc += op0
+		return 12
+	else:
+		return 8
 
 def add_hl_hl(cpu):
 	# 0x29
-	pass
+	cpu.regs.hl = add_word(cpu, cpu.regs.hl, cpu.regs.hl)
+	return 8
 
 def ld_a_hlp(cpu):
 	# 0x2a
-	pass
+	val = cpu.read_mem(cpu.regs.hl)
+	cpu.regs.a = val
+	cpu.regs.hl += 1
+	return 8
 
 def dec_hl(cpu):
 	# 0x2b
-	pass
+	cpu.regs.hl -= 1
+	return 8
 
 def inc_l(cpu):
 	# 0x2c
-	pass
+	cpu.regs.h = inc_byte(cpu, cpu.regs.h)
+	return 4
 
 def dec_l(cpu):
 	# 0x2d
-	pass
+	cpu.regs.l = dec_byte(cpu, cpu.regs.l)
+	return 4
 
 def ld_l_d8(cpu):
 	# 0x2e
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.l = op0
+	return 8
 
 def cpl(cpu):
 	# 0x2f
-	pass
+	cpu.regs.a = cpu.regs.a ^ 0xff
+	cpu.flags(None, 1, 1, None)
+	return 4
 
 def jr_nc_r8(cpu):
 	# 0x30
-	pass
+	op0 = cpu.fetch_byte()
+	if not cpu.regs.f_c:
+		cpu.regs.pc += op0
+		return 12
+	else:
+		return 8
 
 def ld_sp_d16(cpu):
 	# 0x31
-	pass
+	op0 = cpu.fetch_word()
+	cpu.regs.sp = op0
+	return 12
 
 def ld_hlm_a(cpu):
 	# 0x32
-	pass
+	cpu.bus_write(cpu.regs.hl, cpu.regs.a)
+	cpu.regs.hl -= 1
+	return 8
 
 def inc_sp(cpu):
 	# 0x33
-	pass
+	cpu.regs.sp += 1
+	return 8
 
 def inc_hlp(cpu):
 	# 0x34
-	pass
+	val = cpu.bus_read(cpu.regs.hl)
+	val = inc_byte(cpu, val)
+	cpu.bus_write(cpu.regs.hl, val)
+	return 12
 
 def dec_hlp(cpu):
 	# 0x35
-	pass
+	val = cpu.bus_read(cpu.regs.hl)
+	val = dec_byte(cpu, val)
+	cpu.bus_write(cpu.regs.hl, val)
+	return 12
 
 def ld_hl_d8(cpu):
 	# 0x36
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.bus_write(cpu.regs.hl, op0)
+	return 12
 
 def scf(cpu):
 	# 0x37
@@ -228,31 +363,45 @@ def scf(cpu):
 
 def jr_c_r8(cpu):
 	# 0x38
-	pass
+	op0 = cpu.fetch_byte()
+	if cpu.regs.f_c:
+		cpu.regs.pc += op0
+		return 12
+	else:
+		return 8
 
 def add_hl_sp(cpu):
 	# 0x39
-	pass
+	cpu.regs.hl = add_word(cpu, cpu.regs.hl, cpu.regs.sp)
+	return 8
 
 def ld_a_hlm(cpu):
 	# 0x3a
-	pass
+	val = cpu.read_mem(cpu.regs.hl)
+	cpu.regs.a = val
+	cpu.regs.hl -= 1
+	return 8
 
 def dec_sp(cpu):
 	# 0x3b
-	pass
+	cpu.regs.sp -= 1
+	return 8
 
 def inc_a(cpu):
 	# 0x3c
-	pass
+	cpu.regs.a = inc_byte(cpu, cpu.regs.a)
+	return 4
 
 def dec_a(cpu):
 	# 0x3d
-	pass
+	cpu.regs.a = dec_byte(cpu, cpu.regs.a)
+	return 4
 
 def ld_a_d8(cpu):
 	# 0x3e
-	pass
+	op0 = cpu.fetch_byte()
+	cpu.regs.a = op0
+	return 8
 
 def ccf(cpu):
 	# 0x3f

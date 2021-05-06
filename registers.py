@@ -1,77 +1,136 @@
+FLAG_Z = 7
+FLAG_N = 6
+FLAG_H = 5
+FLAG_C = 4
+
 class Registers:
   def __init__(self):
-    self.a = 0
-    self.f = 0
-    self.b = 0
-    self.c = 0
-    self.d = 0
-    self.e = 0
-    self.h = 0
-    self.l = 0
-    self.sp = 0
-    self.pc = 0
+    self._a = 0
+    self._f = 0
+    self._b = 0
+    self._c = 0
+    self._d = 0
+    self._e = 0
+    self._h = 0
+    self._l = 0
+    self._sp = 0
+    self._pc = 0
+
+  @property
+  def a(self):
+    return self._a
+
+  @a.setter
+  def a(self, nn):
+    self._a = nn & 0xff
+
+  @property
+  def f(self):
+    return self._f
+
+  @f.setter
+  def f(self, nn):
+    self._f = nn & 0xff
+
+  @property
+  def b(self):
+    return self._b
+
+  @b.setter
+  def b(self, nn):
+    self._b = nn & 0xff
+
+  @property
+  def c(self):
+    return self._c
+
+  @c.setter
+  def c(self, nn):
+    self._c = nn & 0xff
+
+  @property
+  def d(self):
+    return self._d
+
+  @d.setter
+  def d(self, nn):
+    self._d = nn & 0xff
+
+  @property
+  def e(self):
+    return self._e
+
+  @e.setter
+  def e(self, nn):
+    self._e = nn & 0xff
+
+  @property
+  def h(self):
+    return self._h
+
+  @h.setter
+  def h(self, nn):
+    self._h = nn & 0xff
+
+  @property
+  def l(self):
+    return self._l
+
+  @l.setter
+  def l(self, nn):
+    self._l = nn & 0xff
 
   @property
   def bc(self):
-    return (self.b << 8) | self.c
+    return (self._b << 8) | self._c
 
   @bc.setter
   def bc(self, nn):
-    self.b = nn >> 8
-    self.c = nn & 0xff
+    self._b = nn >> 8
+    self._c = nn & 0xff
 
   @property
   def de(self):
-    return (self.d << 8) | self.e
+    return (self._d << 8) | self._e
 
   @de.setter
   def de(self, nn):
-    self.d = nn >> 8
-    self.e = nn & 0xff
+    self._d = nn >> 8
+    self._e = nn & 0xff
 
   @property
   def hl(self):
-    return (self.h << 8) | self.l
+    return (self._h << 8) | self._l
 
   @hl.setter
   def hl(self, nn):
-    self.h = nn >> 8
-    self.l = nn & 0xff
+    self._h = nn >> 8
+    self._l = nn & 0xff
 
   @property
-  def f_z(self):
-    return (self.f >> 7) & 1
+  def sp(self):
+    return self._sp
 
-  @f_z.setter
-  def f_z(self, bit):
-    self.f = Registers.set_bit(self.f, 7) if bit else Registers.clr_bit(self.f, 7)
-
-  @property
-  def f_n(self):
-    return (self.f >> 6) & 1
-
-  @f_n.setter
-  def f_n(self, bit):
-    self.f = Registers.set_bit(self.f, 6) if bit else Registers.clr_bit(self.f, 6)
+  @sp.setter
+  def sp(self, nn):
+    self._sp = nn & 0xffff
 
   @property
-  def f_h(self):
-    return (self.f >> 5) & 1
+  def pc(self):
+    return self._pc
 
-  @f_h.setter
-  def f_h(self, bit):
-    self.f = Registers.set_bit(self.f, 5) if bit else Registers.clr_bit(self.f, 5)
+  @pc.setter
+  def pc(self, nn):
+    self._pc = nn & 0xffff
 
-  @property
-  def f_c(self):
-    return (self.f >> 4) & 1
-
-  @f_c.setter
-  def f_c(self, bit):
-    self.f = Registers.set_bit(self.f, 4) if bit else Registers.clr_bit(self.f, 4)
-
-  def set_bit(val, pos):
-    return val | (1 << pos)
-
-  def clr_bit(val, pos):
-    return val & ~(1 << pos)
+  def flags(self, z, n, h, c):
+    f = 0
+    if z is not None:
+      f |= z << FLAG_Z
+    if n is not None:
+      f |= n << FLAG_N
+    if h is not None:
+      f |= h << FLAG_H
+    if c is not None:
+      f |= c << FLAG_C
+    self.f = f

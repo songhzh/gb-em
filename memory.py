@@ -1,9 +1,13 @@
 class Memory:
   def __init__(self, bus):
     self.bus = bus
+    self.load('roms/05-op rp.gb')
 
   def load(self, file):
-    pass
+    self.rom = bytearray(open(file, "rb").read())
 
-  def fetch(self, addr):
-    return 0x00
+  def read(self, addr):
+    return self.rom[addr]
+
+  def write(self, addr, val):
+    self.rom[addr] = val.to_bytes(1, byteorder='little')
