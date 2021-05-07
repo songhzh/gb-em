@@ -1,12 +1,12 @@
 from cpu import Cpu
+from lcd import Lcd
 from memory import Memory
 
-from time import sleep
-
 class Board:
-  def __init__(self):
+  def __init__(self, rom):
     self.cpu = Cpu(self)
-    self.mem = Memory(self)
+    self.lcd = Lcd(self)
+    self.mem = Memory(self, rom)
 
   def read_mem(self, addr):
     return self.mem.read(addr)
@@ -17,18 +17,17 @@ class Board:
   def set_if(self, flag):
     flags = self.read_mem(0xff0f)
     if flags & (1 << flag):
-      raise ValueError('Flag already set')
+      return
     val = flags ^ (1 << flag)
     self.write_mem(0xff0f, val)
 
   def clr_if(self, flag):
     flags = self.read_mem(0xff0f)
     if not flags & (1 << flag):
-      raise ValueError('Flag already cleared')
+      return
     val = flags ^ (1 << flag)
     self.write_mem(0xff0f, val)
 
-b = Board()
-while True:
-  b.cpu.step()
-  # input('')
+  def step(self):
+    cycles = self.cpu.step()
+    self.lcd.step(cycles)

@@ -1,38 +1,29 @@
 class Memory:
-  def __init__(self, board):
+  def __init__(self, board, rom):
     self.board = board
 
     # 0x0000 - 0x7fff
     self.rom = bytearray(0x8000)
-
     # 0x8000 - 0x9fff
     self.vram = bytearray(0x2000)
-
     # 0xa000 - 0xbfff
     self.sram = bytearray(0x2000)
-
     # 0xc000 - 0xdfff
     self.wram = bytearray(0x2000)
-
     # 0xe000 - 0xfdff
-    # echo ram
-
+    # (echo ram)
     # 0xfe00 - 0xfe9f
     self.oam = bytearray(0xa0)
-    
     # 0xfea0 - 0xfeff
-    # prohibited
-
+    # (prohibited)
     # 0xff00 - 0xff7f
     self.ioregs = bytearray(0x80)
-
     # 0xff80 - 0xfffe
     self.hram = bytearray(0x7f)
-
     # 0xffff
     self.ie = bytearray(1)
 
-    self.load_rom('roms/tetris.gb')
+    self.load_rom(rom)
 
   def load_rom(self, file):
     with open(file, 'rb') as f:

@@ -43,12 +43,12 @@ class Cpu:
     self.cpu.regs.pc = vec
 
   def check_interrupts(self):
-    if self.ime:
-      int_enable = self.read(0xffff)
-      int_flag = self.read(0xff0f)
-      interrupts = int_enable & int_flag
-      if not interrupts:
-        return False
+    int_enable = self.read(0xffff)
+    int_flag = self.read(0xff0f)
+    interrupts = int_enable & int_flag
+    if interrupts:
+      self.halted = False
+    if interrupts and self.ime:
       if interrupts & (1 << 0): # vblank
         self.handle_interrupt(0, 0x40)
       elif interrupts & (1 << 1): # lcd stat
@@ -62,17 +62,21 @@ class Cpu:
       else:
         raise RuntimeError('Unknown interrupt flag')
       return True
-    elif self.pending_ei:
+    if self.pending_ei:
       self.ime = True
       self.pending_ei = False
     return False
 
   def step(self):
-    opcode = self.fetch_byte()
-    if opcode != 0:
-      print(instructions[opcode].__name__)
     interrupted = self.check_interrupts()
-    cycles = 4 if interrupted else instructions[opcode](self)
-    if opcode != 0:
-      self.regs.print()
+    if interrupted:
+      return 5
+    if self.halted:
+      return 4
+    opcode = self.fetch_byte()
+    # if opcode != 0:
+    #   print(instructions[opcode].__name__)
+    cycles = instructions[opcode](self)
+    # if opcode != 0:
+    #   self.regs.print()
     return cycles
