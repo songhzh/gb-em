@@ -1,7 +1,7 @@
 class Memory:
   def __init__(self, bus):
     self.bus = bus
-    self.load('roms/06-ld r,r.gb')
+    self.load('roms/09-op r,r.gb')
     self.rom += bytearray(0xffff)
 
   def load(self, file):
