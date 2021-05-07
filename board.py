@@ -3,7 +3,7 @@ from memory import Memory
 
 from time import sleep
 
-class Bus:
+class Board:
   def __init__(self):
     self.cpu = Cpu(self)
     self.mem = Memory(self)
@@ -14,7 +14,7 @@ class Bus:
   def write_mem(self, addr, val):
     self.mem.write(addr, val)
 
-b = Bus()
+b = Board()
 while True:
   b.cpu.step()
-  # input('')
+  input('')

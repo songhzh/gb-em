@@ -2,9 +2,9 @@ from instructions import instructions
 from registers import Registers
 
 class Cpu:
-  def __init__(self, bus):
+  def __init__(self, board):
     self.regs = Registers()
-    self.bus = bus
+    self.board = board
 
     self.halted = False
     self.int_master_enable = False
@@ -12,7 +12,7 @@ class Cpu:
     self.int_flag = False
 
   def read(self, addr):
-    return self.bus.read_mem(addr)
+    return self.board.read_mem(addr)
 
   def read_word(self, addr):
     hi = self.read(addr+1)
@@ -20,7 +20,7 @@ class Cpu:
     return (hi << 8) | lo
 
   def write(self, addr, val):
-    self.bus.write_mem(addr, val)
+    self.board.write_mem(addr, val)
 
   def write_word(self, addr, val):
     self.write(addr, val & 0xff)
@@ -37,8 +37,6 @@ class Cpu:
     return (hi << 8) | lo
 
   def step(self):
-    if self.regs.pc == 0x100:
-      print('booted')
     opcode = self.fetch_byte()
     cycles = instructions[opcode](self)
     if opcode != 0:
