@@ -1443,8 +1443,8 @@ def rst_18h(cpu):
 
 def ldh_a8_a(cpu):
   # 0xe0
-  op0 = 0xff00 + cpu.fetch_byte()
-  cpu.write_word(op0, cpu.regs.a)
+  addr = 0xff00 + cpu.fetch_byte()
+  cpu.write(addr, cpu.regs.a)
   return 12
 
 def pop_hl(cpu):
@@ -1456,8 +1456,8 @@ def pop_hl(cpu):
 
 def ld_c_a(cpu):
   # 0xe2
-  val = 0xff00 + cpu.regs.c
-  cpu.write_word(val, cpu.regs.a)
+  addr = 0xff00 + cpu.regs.c
+  cpu.write(addr, cpu.regs.a)
   cpu.pc += 1
   return 8
 
@@ -1537,8 +1537,9 @@ def rst_28h(cpu):
 
 def ldh_a_a8(cpu):
   # 0xf0
-  op0 = 0xff00 + cpu.fetch_byte()
-  cpu.write_word(cpu.regs.a, op0)
+  addr = 0xff00 + cpu.fetch_byte()
+  val = cpu.read(addr)
+  cpu.regs.a = val
   return 12
 
 def pop_af(cpu):
@@ -1550,8 +1551,9 @@ def pop_af(cpu):
 
 def ld_a_c(cpu):
   # 0xf2
-  val = 0xff00 + cpu.regs.c
-  cpu.write_word(cpu.regs.a, val)
+  addr = 0xff00 + cpu.regs.c
+  val = cpu.read(addr)
+  cpu.regs.a = val
   cpu.pc += 1
   return 8
 

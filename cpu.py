@@ -69,10 +69,10 @@ class Cpu:
 
   def step(self):
     opcode = self.fetch_byte()
-    # if opcode != 0:
-    #   print(instructions[opcode].__name__)
+    if opcode != 0:
+      print(instructions[opcode].__name__)
     interrupted = self.check_interrupts()
     cycles = 4 if interrupted else instructions[opcode](self)
-    # if opcode != 0:
-    #   self.regs.print()
+    if opcode != 0:
+      self.regs.print()
     return cycles

@@ -32,7 +32,7 @@ class Memory:
     # 0xffff
     self.ie = bytearray(1)
 
-    self.load_rom('roms/all.gb')
+    self.load_rom('roms/tetris.gb')
 
   def load_rom(self, file):
     with open(file, 'rb') as f:
