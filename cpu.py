@@ -4,8 +4,12 @@ from registers import Registers
 class Cpu:
   def __init__(self, bus):
     self.regs = Registers()
-    self.cycles = 0
     self.bus = bus
+
+    self.halted = False
+    self.int_master_enable = False
+    self.int_enable = True
+    self.int_flag = False
 
   def read(self, addr):
     return self.bus.read_mem(addr)

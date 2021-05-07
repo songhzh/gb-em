@@ -1,102 +1,110 @@
-def signed(byte):
-	return int.from_bytes(byte, byteorder='little', signed=True)
+import logging, sys
+
+logging.basicConfig(level=logging.DEBUG)
+
+def signed(val):
+	sign = -1 if val & 0x80 else 1
+	val = (val ^ 0xff) + 1
+	return sign * (val & 0xff) 
 
 def inc_byte(cpu, val):
-	z = 1 if val + 1 == 0 else 0
+	res = (val + 1) & 0xff
+	z = 1 if res else 0
 	h = 1 if val & 0xf == 0xf else 0
-	cpu.flags(z, 0, h, None)
-	return val + 1
+	cpu.regs.flags(z, 0, h, None)
+	return res
 
 def dec_byte(cpu, val):
-	z = 1 if val - 1 == 0 else 0
+	res = (val - 1) & 0xff
+	z = 1 if res == 0 else 0
 	h = 0 if val & 0xf else 1
-	cpu.flags(z, 1, h, None)
-	return val + 1
+	cpu.regs.flags(z, 1, h, None)
+	return res
 
 def add_word(cpu, val0, val1):
 	res = val0 + val1
 	h = 1 if (val0 & 0xfff) + (val1 & 0xfff) > 0xfff else 0
 	c = 1 if res > 0xffff else 0
-	cpu.flags(None, 0, h, c)
-	return res
+	cpu.regs.flags(None, 0, h, c)
+	return res & 0xffff
 
 def rlc(cpu, val):
 	c = 1 if val & 0x80 else 0
 	res = (val << 1) | c
 	z = res == 0
-	cpu.flags(z, 0, 0, c)
-	return res
+	cpu.regs.flags(z, 0, 0, c)
+	return res & 0xff
 
 def rl(cpu, val):
 	c = 1 if val & 0x80 else 0
 	res = (val << 1) | (cpu.regs.f_c)
 	z = res == 0
-	cpu.flags(z, 0, 0, c)
-	return res
+	cpu.regs.flags(z, 0, 0, c)
+	return res & 0xff
 
 def rrc(cpu, val):
 	c = val & 1
 	res = (val >> 1) | (c << 7)
 	z = res == 0
-	cpu.flags(z, 0, 0, c)
-	return res
+	cpu.regs.flags(z, 0, 0, c)
+	return res & 0xff
 
 def rr(cpu, val):
 	c = val & 1
 	res = (val >> 1) | (cpu.regs.f_c << 7)
 	z = res == 0
-	cpu.flags(z, 0, 0, c)
-	return res
+	cpu.regs.flags(z, 0, 0, c)
+	return res & 0xff
 
 def sla(cpu, val):
 	res = val << 1
 	z = (res & 0xff) == 0
 	c = res > 0xff
-	cpu.flags(z, 0, 0, c)
+	cpu.regs.flags(z, 0, 0, c)
 	return res & 0xff
 
 def sra(cpu, val):
 	res = val >> 1 | (val & 0x80)
 	z = res == 0
-	cpu.flags(z, 0, 0, 0)
-	return res
+	cpu.regs.flags(z, 0, 0, 0)
+	return res & 0xff
 
 def swap(cpu, val):
 	hi = (val & 0xf0) >> 8
 	lo = val & 0xf
 	res = lo | hi
 	z = res == 0
-	cpu.flags(z, 0, 0, 0)
-	return res
+	cpu.regs.flags(z, 0, 0, 0)
+	return res & 0xff
 
 def srl(cpu, val):
 	res = val >> 1
 	z = res == 0
 	c = val & 1
-	cpu.flags(z, 0, 0, c)
-	return res
+	cpu.regs.flags(z, 0, 0, c)
+	return res & 0xff
 
 def bit_op(cpu, pos, val):
 	res = (val >> pos) & 1
 	z = res == 0
-	cpu.flags(z, 0, 1, None)
+	cpu.regs.flags(z, 0, 1, None)
 
 def res_op(cpu, pos, val):
 	res = val & ~(1 << pos)
 	z = res == 0
-	return res
+	return res & 0xff
 
 def set_op(cpu, pos, val):
 	res = val | (1 << pos)
 	z = res == 0
-	return res
+	return res & 0xff
 
 def add(cpu, val0, val1):
 	res = val0 + val1
 	z = res == 0
 	h = 1 if (val0 & 0xf) + (val1 & 0xf) > 0xf else 0
 	c = 1 if res > 0xff else 0
-	cpu.flags(z, 0, h, c)
+	cpu.regs.flags(z, 0, h, c)
 	return res
 
 def adc(cpu, val0, val1):
@@ -104,7 +112,7 @@ def adc(cpu, val0, val1):
 	z = res == 0
 	h = 1 if (val0 & 0xf) + (val1 & 0xf) + cpu.regs.f_c > 0xf else 0
 	c = 1 if res > 0xff else 0
-	cpu.flags(z, 0, h, c)
+	cpu.regs.flags(z, 0, h, c)
 	return res
 
 def sub(cpu, val0, val1):
@@ -112,7 +120,7 @@ def sub(cpu, val0, val1):
 	z = res == 0
 	h = 1 if (val0 & 0xf) - (val1 & 0xf) < 0 else 0
 	c = 1 if res < 0 else 0
-	cpu.flags(z, 1, h, c)
+	cpu.regs.flags(z, 1, h, c)
 	return res
 
 def sbc(cpu, val0, val1):
@@ -120,25 +128,25 @@ def sbc(cpu, val0, val1):
 	z = res == 0
 	h = 1 if (val0 & 0xf) - (val1 & 0xf) - cpu.regs.f_c < 0 else 0
 	c = 1 if res < 0 else 0
-	cpu.flags(z, 1, h, c)
+	cpu.regs.flags(z, 1, h, c)
 	return res
 
 def and_op(cpu, val0, val1):
 	res = val0 & val1
 	z = res == 0
-	cpu.flags(z, 0, 1, 0)
+	cpu.regs.flags(z, 0, 1, 0)
 	return res
 
 def xor_op(cpu, val0, val1):
 	res = val0 ^ val1
 	z = res == 0
-	cpu.flags(z, 0, 0, 0)
+	cpu.regs.flags(z, 0, 0, 0)
 	return res
 
 def or_op(cpu, val0, val1):
 	res = val0 | val1
 	z = res == 0
-	cpu.flags(z, 0, 0, 0)
+	cpu.regs.flags(z, 0, 0, 0)
 	return res
 
 def cp_op(cpu, val0, val1):
@@ -225,6 +233,7 @@ def ld_c_d8(cpu):
 	# 0x0e
 	op0 = cpu.fetch_byte()
 	cpu.regs.c = op0
+	logging.debug(f'ld c {hex(op0)}')
 	return 8
 
 def rrca(cpu):
@@ -241,11 +250,13 @@ def ld_de_d16(cpu):
 	# 0x11
 	op0 = cpu.fetch_word()
 	cpu.regs.de = op0
+	logging.debug(f'ld de {hex(op0)}')
 	return 12
 
 def ld_de_a(cpu):
 	# 0x12
 	cpu.write(cpu.regs.de, cpu.regs.a)
+	logging.debug(f'ld (de), a')
 	return 8
 
 def inc_de(cpu):
@@ -299,6 +310,7 @@ def dec_de(cpu):
 def inc_e(cpu):
 	# 0x1c
 	cpu.regs.e = inc_byte(cpu, cpu.regs.e)
+	logging.debug(f'inc e ({cpu.regs.e})')
 	return 4
 
 def dec_e(cpu):
@@ -320,6 +332,7 @@ def rra(cpu):
 def jr_nz_r8(cpu):
 	# 0x20
 	op0 = signed(cpu.fetch_byte())
+	logging.debug(f'jr nz {op0}')
 	if not cpu.regs.f_z:
 		cpu.regs.pc += op0
 		return 12
@@ -330,6 +343,7 @@ def ld_hl_d16(cpu):
 	# 0x21
 	op0 = cpu.fetch_word()
 	cpu.regs.hl = op0
+	logging.debug(f'ld hl {hex(op0)}')
 	return 12
 
 def ld_hlp_a(cpu):
@@ -361,7 +375,23 @@ def ld_h_d8(cpu):
 
 def daa(cpu):
 	# 0x27
-	pass
+	# adapted from https://github.com/CTurt/Cinoop/blob/master/source/cpu.c
+	val = cpu.regs.a
+	if cpu.regs.f_n:
+		if cpu.regs.f_h:
+			val = (val - 6) & 0xff
+		if cpu.regs.f_c:
+			val -= 0x60
+	else:
+		if cpu.regs.f_h or (val & 0xf) > 9:
+			val += 6
+		if cpu.regs.f_c or val > 0x9f:
+			val += 0x60
+	z = 1 if val == 0 else 0
+	c = 1 if val > 0x100 else 0
+	cpu.regs.a = val
+	cpu.regs.flags(z, None, 0, c)
+	return 4
 
 def jr_z_r8(cpu):
 	# 0x28
@@ -382,6 +412,7 @@ def ld_a_hlp(cpu):
 	val = cpu.read(cpu.regs.hl)
 	cpu.regs.a = val
 	cpu.regs.hl += 1
+	logging.debug(f'ld a, (hl+)')
 	return 8
 
 def dec_hl(cpu):
@@ -408,7 +439,7 @@ def ld_l_d8(cpu):
 def cpl(cpu):
 	# 0x2f
 	cpu.regs.a = cpu.regs.a ^ 0xff
-	cpu.flags(None, 1, 1, None)
+	cpu.regs.flags(None, 1, 1, None)
 	return 4
 
 def jr_nc_r8(cpu):
@@ -459,7 +490,7 @@ def ld_hl_d8(cpu):
 
 def scf(cpu):
 	# 0x37
-	cpu.flags(None, 0, 0, 1)
+	cpu.regs.flags(None, 0, 0, 1)
 	return 4
 
 def jr_c_r8(cpu):
@@ -507,7 +538,7 @@ def ld_a_d8(cpu):
 def ccf(cpu):
 	# 0x3f
 	c = cpu.regs.f_c ^ 1
-	cpu.flags(None, 0, 0, c)
+	cpu.regs.flags(None, 0, 0, c)
 	return 4
 
 def ld_b_b(cpu):
@@ -548,6 +579,7 @@ def ld_b_hl(cpu):
 def ld_b_a(cpu):
 	# 0x47
 	cpu.regs.b = cpu.regs.a
+	logging.debug(f'ld b a')
 	return 4
 
 def ld_c_b(cpu):
@@ -782,7 +814,8 @@ def ld_hl_l(cpu):
 
 def halt(cpu):
 	# 0x76
-	pass
+	cpu.halted = True
+	return 4
 
 def ld_hl_a(cpu):
 	# 0x77
@@ -1188,6 +1221,7 @@ def jp_a16(cpu):
 	# 0xc3
 	op0 = cpu.fetch_word()
 	cpu.regs.pc = op0
+	logging.debug(f'jp {hex(op0)}')
 	return 16
 
 def call_nz_a16(cpu):
@@ -1356,7 +1390,11 @@ def ret_c(cpu):
 
 def reti(cpu):
 	# 0xd9
-	pass
+	val = cpu.read(cpu.regs.sp)
+	cpu.regs.pc = val
+	cpu.regs.sp += 2
+	cpu.int_master_enable = True
+	return 16
 
 def jp_c_a16(cpu):
 	# 0xda
@@ -1517,7 +1555,8 @@ def ld_a_c(cpu):
 
 def di(cpu):
 	# 0xf3
-	pass
+	cpu.int_master_enable = False
+	return 4
 
 def op_0xf4(cpu):
 	# 0xf4
@@ -1563,7 +1602,8 @@ def ld_a_a16(cpu):
 
 def ei(cpu):
 	# 0xfb
-	pass
+	cpu.int_master_enable = True
+	return 4
 
 def op_0xfc(cpu):
 	# 0xfc

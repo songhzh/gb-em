@@ -11,3 +11,7 @@ class Bus:
 
   def write_mem(self, addr, val):
     self.mem.write(addr, val)
+
+b = Bus()
+while True:
+  b.cpu.step()
