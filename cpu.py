@@ -37,7 +37,11 @@ class Cpu:
     return (hi << 8) | lo
 
   def step(self):
+    if self.regs.pc == 0x100:
+      print('booted')
     opcode = self.fetch_byte()
+    cycles = instructions[opcode](self)
     if opcode != 0:
       print(instructions[opcode].__name__)
-    cycles = instructions[opcode](self)
+      self.regs.print()
+    return cycles

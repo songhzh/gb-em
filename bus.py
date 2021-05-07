@@ -1,6 +1,8 @@
 from cpu import Cpu
 from memory import Memory
 
+from time import sleep
+
 class Bus:
   def __init__(self):
     self.cpu = Cpu(self)
@@ -15,3 +17,4 @@ class Bus:
 b = Bus()
 while True:
   b.cpu.step()
+  # input('')

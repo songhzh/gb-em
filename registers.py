@@ -179,3 +179,11 @@ class Registers:
       self.f_h = h
     if c is not None:
       self.f_c = c
+
+  def print(self):
+    print('\taf = {:04x}'.format(self.af))
+    print('\tbc = {:04x}'.format(self.bc))
+    print('\tde = {:04x}'.format(self.de))
+    print('\thl = {:04x}'.format(self.hl))
+    print('\tsp = {:04x}'.format(self.sp))
+    print('\tpc = {:04x}'.format(self.pc))

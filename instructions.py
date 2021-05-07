@@ -1,6 +1,6 @@
 import logging, sys
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 def signed(val):
   sign = -1 if val & 0x80 else 1
@@ -461,6 +461,7 @@ def ld_hlm_a(cpu):
   # 0x32
   cpu.write(cpu.regs.hl, cpu.regs.a)
   cpu.regs.hl -= 1
+  logging.debug(f'ld (hl-), a')
   return 8
 
 def inc_sp(cpu):
@@ -1106,6 +1107,7 @@ def xor_hl(cpu):
 def xor_a(cpu):
   # 0xaf
   cpu.regs.a = xor_op(cpu, cpu.regs.a, cpu.regs.a)
+  logging.debug(f'xor a')
   return 4
 
 def or_b(cpu):
@@ -1442,7 +1444,7 @@ def rst_18h(cpu):
 def ldh_a8_a(cpu):
   # 0xe0
   op0 = 0xff00 + cpu.fetch_byte()
-  cpu.write(op0, cpu.regs.a)
+  cpu.write_word(op0, cpu.regs.a)
   return 12
 
 def pop_hl(cpu):
@@ -1455,7 +1457,7 @@ def pop_hl(cpu):
 def ld_c_a(cpu):
   # 0xe2
   val = 0xff00 + cpu.regs.c
-  cpu.write(val, cpu.regs.a)
+  cpu.write_word(val, cpu.regs.a)
   cpu.pc += 1
   return 8
 
@@ -1536,7 +1538,7 @@ def rst_28h(cpu):
 def ldh_a_a8(cpu):
   # 0xf0
   op0 = 0xff00 + cpu.fetch_byte()
-  cpu.write(cpu.regs.a, op0)
+  cpu.write_word(cpu.regs.a, op0)
   return 12
 
 def pop_af(cpu):
@@ -1549,7 +1551,7 @@ def pop_af(cpu):
 def ld_a_c(cpu):
   # 0xf2
   val = 0xff00 + cpu.regs.c
-  cpu.write(cpu.regs.a, val)
+  cpu.write_word(cpu.regs.a, val)
   cpu.pc += 1
   return 8
 
