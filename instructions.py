@@ -3,9 +3,8 @@ import logging, sys
 # logging.basicConfig(level=logging.DEBUG)
 
 def signed(val):
-  sign = -1 if val & 0x80 else 1
-  val = (val ^ 0xff) + 1
-  return sign * (val & 0xff) 
+  byte = val.to_bytes(1, byteorder='little', signed=False)
+  return int.from_bytes(byte, byteorder='little', signed=True)
 
 def inc_byte(cpu, val):
   res = (val + 1) & 0xff
@@ -200,7 +199,7 @@ def rlca(cpu):
 def ld_a16_sp(cpu):
   # 0x08
   op0 = cpu.fetch_word()
-  cpu.write(op0, cpu.regs.sp)
+  cpu.write_word(op0, cpu.regs.sp)
   return 20
 
 def add_hl_bc(cpu):
@@ -1195,7 +1194,7 @@ def cp_a(cpu):
 def ret_nz(cpu):
   # 0xc0
   if not cpu.regs.f_z:
-    val = cpu.read(cpu.regs.sp)
+    val = cpu.read_word(cpu.regs.sp)
     cpu.regs.pc = val
     cpu.regs.sp += 2
     return 20
@@ -1259,7 +1258,7 @@ def rst_00h(cpu):
 def ret_z(cpu):
   # 0xc8
   if cpu.regs.f_z:
-    val = cpu.read(cpu.regs.sp)
+    val = cpu.read_word(cpu.regs.sp)
     cpu.regs.pc = val
     cpu.regs.sp += 2
     return 20
@@ -1268,7 +1267,7 @@ def ret_z(cpu):
 
 def ret(cpu):
   # 0xc9
-  val = cpu.read(cpu.regs.sp)
+  val = cpu.read_word(cpu.regs.sp)
   cpu.regs.pc = val
   cpu.regs.sp += 2
   return 16
@@ -1322,7 +1321,7 @@ def rst_08h(cpu):
 def ret_nc(cpu):
   # 0xd0
   if not cpu.regs.f_c:
-    val = cpu.read(cpu.regs.sp)
+    val = cpu.read_word(cpu.regs.sp)
     cpu.regs.pc = val
     cpu.regs.sp += 2
     return 20
@@ -1383,7 +1382,7 @@ def rst_10h(cpu):
 def ret_c(cpu):
   # 0xd8
   if cpu.regs.f_c:
-    val = cpu.read(cpu.regs.sp)
+    val = cpu.read_word(cpu.regs.sp)
     cpu.regs.pc = val
     cpu.regs.sp += 2
     return 20
@@ -1392,7 +1391,7 @@ def ret_c(cpu):
 
 def reti(cpu):
   # 0xd9
-  val = cpu.read(cpu.regs.sp)
+  val = cpu.read_word(cpu.regs.sp)
   cpu.regs.pc = val
   cpu.regs.sp += 2
   cpu.pending_ei = True
@@ -1458,7 +1457,7 @@ def ld_c_a(cpu):
   # 0xe2
   addr = 0xff00 + cpu.regs.c
   cpu.write(addr, cpu.regs.a)
-  cpu.pc += 1
+  cpu.regs.pc += 1
   return 8
 
 def op_0xe3(cpu):
@@ -1492,8 +1491,8 @@ def rst_20h(cpu):
 
 def add_sp_r8(cpu):
   # 0xe8
-  val = signed(signed(cpu.fetch_byte()))
-  cpu.regs.sp = add_word(cpu.regs.sp, val)
+  val = signed(cpu.fetch_byte())
+  cpu.regs.sp = add_word(cpu, cpu.regs.sp, val)
   return 16
 
 def jp_hl(cpu):
@@ -1554,7 +1553,7 @@ def ld_a_c(cpu):
   addr = 0xff00 + cpu.regs.c
   val = cpu.read(addr)
   cpu.regs.a = val
-  cpu.pc += 1
+  cpu.regs.pc += 1
   return 8
 
 def di(cpu):
@@ -1589,9 +1588,8 @@ def rst_30h(cpu):
 def ld_hl_spr8(cpu):
   # 0xf8
   val = signed(cpu.fetch_byte())
-  cpu.regs.hl = add_word(cpu.regs.sp, val)
+  cpu.regs.hl = add_word(cpu, cpu.regs.sp, val)
   return 12
-
 
 def ld_sp_hl(cpu):
   # 0xf9
@@ -1601,7 +1599,7 @@ def ld_sp_hl(cpu):
 def ld_a_a16(cpu):
   # 0xfa
   op0 = cpu.fetch_word()
-  cpu.write(cpu.regs.a, op0)
+  cpu.regs.a = cpu.read(op0)
   return 16
 
 def ei(cpu):

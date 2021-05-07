@@ -74,9 +74,9 @@ class Cpu:
     if self.halted:
       return 4
     opcode = self.fetch_byte()
-    # if opcode != 0:
-    #   print(instructions[opcode].__name__)
     cycles = instructions[opcode](self)
     # if opcode != 0:
+    #   print(instructions[opcode].__name__)
     #   self.regs.print()
+    #   print()
     return cycles

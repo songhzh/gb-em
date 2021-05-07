@@ -1,5 +1,5 @@
 class Memory:
-  def __init__(self, board, rom):
+  def __init__(self, board):
     self.board = board
 
     # 0x0000 - 0x7fff
@@ -22,8 +22,6 @@ class Memory:
     self.hram = bytearray(0x7f)
     # 0xffff
     self.ie = bytearray(1)
-
-    self.load_rom(rom)
 
   def load_rom(self, file):
     with open(file, 'rb') as f:
@@ -49,7 +47,7 @@ class Memory:
     if 0xfe00 <= addr < 0xfea0:
       return self.oam[addr-0xfe00]
     if 0xfea0 <= addr < 0xff00:
-      return
+      return 0
     if 0xff00 <= addr < 0xff80:
       return self.ioregs[addr-0xff00]
     if 0xff80 <= addr < 0xffff:
@@ -59,6 +57,9 @@ class Memory:
     raise IndexError('Reading memory out of bounds')
 
   def write(self, addr, val):
+    if addr == 0xff02:
+      char = self.read(0xff01)
+      print(chr(char), end='')
     if 0x0000 <= addr < 0x8000:
       self.rom[addr] = val
       return
