@@ -7,9 +7,8 @@ class Cpu:
     self.board = board
 
     self.halted = False
-    self.int_master_enable = False
-    self.int_enable = True
-    self.int_flag = False
+    self.pending_ei = False
+    self.ime = False
 
   def read(self, addr):
     return self.board.read_mem(addr)
@@ -36,10 +35,44 @@ class Cpu:
     hi = self.fetch_byte()
     return (hi << 8) | lo
 
+  def handle_interrupt(self, flag, vec):
+    self.ime = False
+    self.bus.clr_if(flag)
+    self.cpu.regs.sp -= 2
+    self.cpu.write_word(self.cpu.regs.sp, self.cpu.regs.pc)
+    self.cpu.regs.pc = vec
+
+  def check_interrupts(self):
+    if self.ime:
+      int_enable = self.read(0xffff)
+      int_flag = self.read(0xff0f)
+      interrupts = int_enable & int_flag
+      if not interrupts:
+        return False
+      if interrupts & (1 << 0): # vblank
+        self.handle_interrupt(0, 0x40)
+      elif interrupts & (1 << 1): # lcd stat
+        self.handle_interrupt(1, 0x48)
+      elif interrupts & (1 << 2): # timer
+        self.handle_interrupt(2, 0x50)
+      elif interrupts & (1 << 3): # serial
+        self.handle_interrupt(3, 0x58)
+      elif interrupts & (1 << 4): # joypad
+        self.handle_interrupt(4, 0x60)
+      else:
+        raise RuntimeError('Unknown interrupt flag')
+      return True
+    elif self.pending_ei:
+      self.ime = True
+      self.pending_ei = False
+    return False
+
   def step(self):
     opcode = self.fetch_byte()
-    cycles = instructions[opcode](self)
-    if opcode != 0:
-      print(instructions[opcode].__name__)
-      self.regs.print()
+    # if opcode != 0:
+    #   print(instructions[opcode].__name__)
+    interrupted = self.check_interrupts()
+    cycles = 4 if interrupted else instructions[opcode](self)
+    # if opcode != 0:
+    #   self.regs.print()
     return cycles

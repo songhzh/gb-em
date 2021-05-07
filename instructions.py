@@ -1395,7 +1395,7 @@ def reti(cpu):
   val = cpu.read(cpu.regs.sp)
   cpu.regs.pc = val
   cpu.regs.sp += 2
-  cpu.int_master_enable = True
+  cpu.pending_ei = True
   return 16
 
 def jp_c_a16(cpu):
@@ -1557,7 +1557,7 @@ def ld_a_c(cpu):
 
 def di(cpu):
   # 0xf3
-  cpu.int_master_enable = False
+  cpu.ime = False
   return 4
 
 def op_0xf4(cpu):
@@ -1604,7 +1604,7 @@ def ld_a_a16(cpu):
 
 def ei(cpu):
   # 0xfb
-  cpu.int_master_enable = True
+  cpu.pending_ei = True
   return 4
 
 def op_0xfc(cpu):
