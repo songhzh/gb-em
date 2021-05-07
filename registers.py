@@ -5,16 +5,16 @@ FLAG_C = 4
 
 class Registers:
   def __init__(self):
-    self._a = 0
-    self._f = 0
-    self._b = 0
-    self._c = 0
-    self._d = 0
-    self._e = 0
-    self._h = 0
-    self._l = 0
-    self._sp = 0
-    self._pc = 0
+    self._a = 0x01
+    self._f = 0xb0
+    self._b = 0x00
+    self._c = 0x13
+    self._d = 0x00
+    self._e = 0xd8
+    self._h = 0x01
+    self._l = 0x4d
+    self._sp = 0xfffe
+    self._pc = 0x0100
 
   @property
   def a(self):
