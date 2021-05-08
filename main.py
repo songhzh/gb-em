@@ -6,7 +6,7 @@ if __name__ == '__main__':
   # pygame.display.set_mode((160, 144))
   # pygame.display.set_caption('gb-em')
   
-  gameboy = Board('roms/all.gb')
+  gameboy = Board('roms/07.gb')
 
   # while gameboy.cpu.regs.pc != 0x100:
   #   gameboy.step()

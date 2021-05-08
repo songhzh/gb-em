@@ -8,7 +8,7 @@ def signed(val):
 
 def inc_byte(cpu, val):
   res = (val + 1) & 0xff
-  z = 1 if res else 0
+  z = 1 if res == 0 else 0
   h = 1 if val & 0xf == 0xf else 0
   cpu.regs.flags(z, 0, h, None)
   return res
@@ -30,41 +30,41 @@ def add_word(cpu, val0, val1):
 def rlc(cpu, val):
   c = 1 if val & 0x80 else 0
   res = (val << 1) | c
-  z = res == 0
+  z = 1 if res == 0 else 0
   cpu.regs.flags(z, 0, 0, c)
   return res & 0xff
 
 def rl(cpu, val):
   c = 1 if val & 0x80 else 0
   res = (val << 1) | (cpu.regs.f_c)
-  z = res == 0
+  z = 1 if res == 0 else 0
   cpu.regs.flags(z, 0, 0, c)
   return res & 0xff
 
 def rrc(cpu, val):
   c = val & 1
   res = (val >> 1) | (c << 7)
-  z = res == 0
+  z = 1 if res == 0 else 0
   cpu.regs.flags(z, 0, 0, c)
   return res & 0xff
 
 def rr(cpu, val):
   c = val & 1
   res = (val >> 1) | (cpu.regs.f_c << 7)
-  z = res == 0
+  z = 1 if res == 0 else 0
   cpu.regs.flags(z, 0, 0, c)
   return res & 0xff
 
 def sla(cpu, val):
   res = val << 1
-  z = (res & 0xff) == 0
-  c = res > 0xff
+  z = 1 if (res & 0xff) == 0 else 0
+  c = 1 if res > 0xff else 0
   cpu.regs.flags(z, 0, 0, c)
   return res & 0xff
 
 def sra(cpu, val):
   res = val >> 1 | (val & 0x80)
-  z = res == 0
+  z = 1 if res == 0 else 0
   cpu.regs.flags(z, 0, 0, 0)
   return res & 0xff
 
@@ -72,35 +72,33 @@ def swap(cpu, val):
   hi = (val & 0xf0) >> 8
   lo = val & 0xf
   res = lo | hi
-  z = res == 0
+  z = 1 if res == 0 else 0
   cpu.regs.flags(z, 0, 0, 0)
   return res & 0xff
 
 def srl(cpu, val):
   res = val >> 1
-  z = res == 0
+  z = 1 if res == 0 else 0
   c = val & 1
   cpu.regs.flags(z, 0, 0, c)
   return res & 0xff
 
 def bit_op(cpu, pos, val):
   res = (val >> pos) & 1
-  z = res == 0
+  z = 1 if res == 0 else 0
   cpu.regs.flags(z, 0, 1, None)
 
 def res_op(cpu, pos, val):
   res = val & ~(1 << pos)
-  z = res == 0
   return res & 0xff
 
 def set_op(cpu, pos, val):
   res = val | (1 << pos)
-  z = res == 0
   return res & 0xff
 
 def add(cpu, val0, val1):
   res = val0 + val1
-  z = res == 0
+  z = 1 if res == 0 else 0
   h = 1 if (val0 & 0xf) + (val1 & 0xf) > 0xf else 0
   c = 1 if res > 0xff else 0
   cpu.regs.flags(z, 0, h, c)
@@ -108,7 +106,7 @@ def add(cpu, val0, val1):
 
 def adc(cpu, val0, val1):
   res = val0 + val1 + cpu.regs.f_c
-  z = res == 0
+  z = 1 if res == 0 else 0
   h = 1 if (val0 & 0xf) + (val1 & 0xf) + cpu.regs.f_c > 0xf else 0
   c = 1 if res > 0xff else 0
   cpu.regs.flags(z, 0, h, c)
@@ -116,7 +114,7 @@ def adc(cpu, val0, val1):
 
 def sub(cpu, val0, val1):
   res = val0 - val1
-  z = res == 0
+  z = 1 if res == 0 else 0
   h = 1 if (val0 & 0xf) - (val1 & 0xf) < 0 else 0
   c = 1 if res < 0 else 0
   cpu.regs.flags(z, 1, h, c)
@@ -124,7 +122,7 @@ def sub(cpu, val0, val1):
 
 def sbc(cpu, val0, val1):
   res = val0 - val1 - cpu.regs.f_c
-  z = res == 0
+  z = 1 if res == 0 else 0
   h = 1 if (val0 & 0xf) - (val1 & 0xf) - cpu.regs.f_c < 0 else 0
   c = 1 if res < 0 else 0
   cpu.regs.flags(z, 1, h, c)
@@ -132,19 +130,19 @@ def sbc(cpu, val0, val1):
 
 def and_op(cpu, val0, val1):
   res = val0 & val1
-  z = res == 0
+  z = 1 if res == 0 else 0
   cpu.regs.flags(z, 0, 1, 0)
   return res
 
 def xor_op(cpu, val0, val1):
   res = val0 ^ val1
-  z = res == 0
+  z = 1 if res == 0 else 0
   cpu.regs.flags(z, 0, 0, 0)
   return res
 
 def or_op(cpu, val0, val1):
   res = val0 | val1
-  z = res == 0
+  z = 1 if res == 0 else 0
   cpu.regs.flags(z, 0, 0, 0)
   return res
 

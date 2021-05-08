@@ -11,6 +11,13 @@ class Board:
     self.mem.load_rom(rom)
 
   def reset_regs(self):
+    # self.cpu.regs.af = 0x1180
+    # self.cpu.regs.bc = 0x0000
+    # self.cpu.regs.de = 0xff56
+    # self.cpu.regs.hl = 0x000d
+    # self.cpu.regs.sp = 0xfffe
+    # self.cpu.regs.pc = 0x0100
+
     self.cpu.regs.af = 0x01b0
     self.cpu.regs.bc = 0x0013
     self.cpu.regs.de = 0x00d8

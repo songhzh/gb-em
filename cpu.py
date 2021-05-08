@@ -68,6 +68,8 @@ class Cpu:
     return False
 
   def step(self):
+    # if self.regs.pc == 0xc000:
+    #   print()
     interrupted = self.check_interrupts()
     if interrupted:
       return 5
